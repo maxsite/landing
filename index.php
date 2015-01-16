@@ -43,6 +43,6 @@
 	if ($fn = mso_fe($VAR['end_file'])) require($fn);
 	if ($VAR['after_file'] and $fn = mso_fe($VAR['after_file'])) require($fn);
 	mso_stat_out();
-	if ($fn = $VAR['generate_static_page']) file_put_contents($fn, ob_get_flush());
+	if ($fn = $VAR['generate_static_page']) file_put_contents($fn, str_replace(BASE_URL, $VAR['generate_static_page_base_url'], ob_get_flush()));
 
 # end of file
