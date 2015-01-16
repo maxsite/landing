@@ -1,0 +1,16 @@
+Options +FollowSymLinks
+Options -Indexes
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+
+
+# landing — каталог на сервере
+
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteBase /landing/
+RewriteCond $1 !^(index\.php|robots\.txt|favicon\.ico)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /landing/index.php?page=$1 [QSA] 
+</IfModule>

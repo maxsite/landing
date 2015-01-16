@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /environment/*
+Disallow: /components/*
+Disallow: /css-less/*
+Disallow: /engine/*
+Disallow: /pages/*
+Disallow: /fonts/*
+Disallow: /cache/*
+Disallow: /css/*
+Disallow: /set/*
+Disallow: /js/*
+
+Host: 
