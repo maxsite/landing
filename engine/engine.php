@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.org/
-	ver. 24.8 16/01/2015
+	ver. 24.9 22/01/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -14,6 +14,7 @@
 		CodeIgniter: http://codeigniter.com/
 		Less.php: http://lessphp.gpeasy.com/
 		Textile: http://txstyle.org/article/36/php-textile
+		Markdown Extra: http://michelf.ca/projects/php-markdown/
 
 */
 
@@ -92,6 +93,9 @@ function init()
 	
 	define("COMPONENTS_DIR", BASE_DIR . 'components/'); // путь к /components/ на сервере
 	define("COMPONENTS_URL", BASE_URL . 'components/'); // http-путь к /components/
+	
+	define("SNIPPETS_DIR", BASE_DIR . 'snippets/'); // путь к /snippets/ на сервере
+	define("SNIPPETS_URL", BASE_URL . 'snippets/'); // http-путь к /snippets/
 	
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
 	if (!defined('PAGE_404')) define('PAGE_404', '404');
@@ -231,7 +235,7 @@ function mso_fe($file)
 }
 
 /**
-*  Функция подключает файл, расположенный в текущем каталоге страницы
+*  Функция подключает файл
 *  
 *  @param $file имя файла
 *  @param $dir можно явно указать каталог
@@ -2145,6 +2149,31 @@ function mso_event($event, $args = array())
 		}
 		
 	}
+}
+
+/**
+*  Возвращает snippet из каталога /snippets/
+*  Каждый snippet в отдельном php-файле
+*  Файлы можно размещать в кодкаталогах
+*  
+*  $snippets — имя сниппета
+*  $return_content = true — возвращать контент
+*  $return_content = false — только подключить через require
+*  
+*  Sample:
+*  	В /snippets/header.php
+*  		<?= mso_snippet('header') ?>
+*  	
+*  	В /snippets/home/top.php
+*  		echo mso_snippet('home/top');
+*  
+*  @return string
+*/
+function mso_snippet($snippet = '', $return_content = true) {
+	
+	if (!$snippet) return;
+	
+	return mso_fr($snippet . '.php', SNIPPETS_DIR, $return_content);
 }
 
 #end of file
