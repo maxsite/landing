@@ -2,6 +2,7 @@ User-agent: *
 Disallow: /environment/*
 Disallow: /components/*
 Disallow: /css-less/*
+Disallow: /snippets/*
 Disallow: /engine/*
 Disallow: /pages/*
 Disallow: /fonts/*
