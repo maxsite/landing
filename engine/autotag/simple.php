@@ -40,11 +40,6 @@
 		цитата blockquote
 	/bq
 
-	Можно задать css-класс, например:
-	_(класс)
-	h1(класс)
-	ul(класс)
-	div(класс)
 	
 	Строчные тэги (указать пробел перед): 
 	
@@ -55,6 +50,18 @@
 	*strong*
 	
 	@code@
+
+	Можно задать css-класс, например:
+	_(класс)
+	h1(класс)
+	ul(класс)
+	div(класс)
+	div(класс1 класс2)
+	
+	После класса можно задать style
+	_(класс)(стили)
+	h1(класс)(стили)
+	div(класс)(стили)
 	
 */
 
@@ -67,6 +74,7 @@ function autotag_simple($text)
 	$text = preg_replace('!\n\s*_\s(.*?)\n!', "\n\n<p>$1</p>\n", $text);
 	$text = preg_replace('!\n\s*_\s(.*?)\n!', "\n\n<p>$1</p>\n", $text);
 	
+	$text = preg_replace('!\n\s*_\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n\n<p class=\"$1\" style=\"$2\">$3</p>\n", $text);
 	$text = preg_replace('!\n\s*_\((.*?)\)\s(.*?)\n!', "\n\n<p class=\"$1\">$2</p>\n", $text);
 	
 	$text = preg_replace('!\n\s*h1\s(.*?)\n!', "\n<h1>$1</h1>\n", $text);
@@ -75,6 +83,13 @@ function autotag_simple($text)
 	$text = preg_replace('!\n\s*h4\s(.*?)\n!', "\n<h4>$1</h4>\n", $text);
 	$text = preg_replace('!\n\s*h5\s(.*?)\n!', "\n<h5>$1</h5>\n", $text);
 	$text = preg_replace('!\n\s*h6\s(.*?)\n!', "\n<h6>$1</h6>\n", $text);
+	
+	$text = preg_replace('!\n\s*h1\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h1 class=\"$1\" style=\"$2\">$3</h1>\n", $text);
+	$text = preg_replace('!\n\s*h2\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h2 class=\"$1\" style=\"$2\">$3</h2>\n", $text);
+	$text = preg_replace('!\n\s*h3\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h3 class=\"$1\" style=\"$2\">$3</h3>\n", $text);
+	$text = preg_replace('!\n\s*h4\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h4 class=\"$1\" style=\"$2\">$3</h4>\n", $text);
+	$text = preg_replace('!\n\s*h5\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h5 class=\"$1\" style=\"$2\">$3</h5>\n", $text);
+	$text = preg_replace('!\n\s*h6\((.*?)\)\((.*?)\)\s(.*?)\n!', "\n<h6 class=\"$1\" style=\"$2\">$3</h6>\n", $text);
 	
 	$text = preg_replace('!\n\s*h1\((.*?)\)\s(.*?)\n!', "\n<h1 class=\"$1\">$2</h1>\n", $text);
 	$text = preg_replace('!\n\s*h2\((.*?)\)\s(.*?)\n!', "\n<h2 class=\"$1\">$2</h2>\n", $text);
@@ -88,6 +103,8 @@ function autotag_simple($text)
 	
 	$text = preg_replace('!\n\s*div\n!', "\n<div>\n", $text);
 	$text = preg_replace('!\n\s*\/div\n!', "\n</div>\n", $text);
+	
+	$text = preg_replace('!\n\s*div\((.*?)\)\((.*?)\)\n!', "\n<div class=\"$1\" style=\"$2\">\n", $text);
 	$text = preg_replace('!\n\s*div\((.*?)\)\n!', "\n<div class=\"$1\">\n", $text);	
 	
 	$text = preg_replace('!\n\s*ul\n!', "\n<ul>\n", $text);
