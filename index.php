@@ -1,5 +1,5 @@
 <?php
-#	Landing Page Framework (LPF) | (c) MAX — http://lpf.maxsite.org/
+#	Landing Page Framework (LPF) | (c) MAX — http://lpf.maxsite.com.ua/
 #	Putin Huilo! Crimea this Ukraine!
 
 	define('BASEPATH', dirname(realpath(__FILE__)) . '/');

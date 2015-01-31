@@ -1,2 +1,2 @@
 Landing Page Framework (LPF)
-(c) MAX — http://lpf.maxsite.org/
+(c) MAX — http://lpf.maxsite.com.ua/

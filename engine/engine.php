@@ -1,7 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed'); 
 /*
 	Landing Page Framework (LPF)
-	(c) MAX — http://lpf.maxsite.org/
+	(c) MAX — http://lpf.maxsite.com.ua/
 	ver. 24.9 22/01/2015
 	
 	Made in Ukraine | Зроблено в Україні
@@ -773,7 +773,7 @@ function mso_stat_out()
 	if ($VAR['compress_text']) $out .= ' | Compress text';
 	if ($VAR['remove_protocol']) $out .= ' | Remove protocol';
 	
-	$out = NR . '<!-- (c) Landing Page Framework http://lpf.maxsite.org/ | ' . $out . ' | Путин хуйло! | Крым — это Украина! -->' . NR;
+	$out = NR . '<!-- (c) Landing Page Framework http://lpf.maxsite.com.ua/ | ' . $out . ' | Путин хуйло! | Крым — это Украина! -->' . NR;
 	
 	echo $out . '</body></html>';
 }
