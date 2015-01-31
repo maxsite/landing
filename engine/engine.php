@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 24.9 22/01/2015
+	ver. 25.0 31/01/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -289,6 +289,9 @@ function mso_fr($file, $dir = '', $return_content = false)
 function mso_lessc($less_file = '', $css_file = '', $css_url = '', $use_cache = false, $use_mini = true, $use_mini_n = true)
 {
 	global $MSO, $VAR;
+	
+	// если false, то ничего не делаем и сразу выходим
+	if ($MSO['_less_complier'] === false) return;
 	
 	if ($VAR['remove_protocol']) $css_url = mso_remove_protocol($css_url);
 
