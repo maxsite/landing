@@ -26,7 +26,7 @@ RewriteRule ^(.*)$ /landing/index.php?page=$1 [QSA]
 </IfModule>
 
 <ifmodule mod_expires.c>
-	<filesmatch ".(jpg|jpeg|gif|png|ico|css|js)$">
+	<filesmatch ".(jpg|jpeg|gif|png|ico|css|js|woff)$">
 	ExpiresActive on
 	ExpiresDefault "access plus 1 month"
 	</filesmatch>
