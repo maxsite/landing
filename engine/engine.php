@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.0 31/01/2015
+	ver. 25.1 15/02/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -1701,9 +1701,9 @@ function mso_array_php_to_js($a, $def = array(), $ignore = array('element', 'loa
 *  
 *  @return string
 */
-function mso_jsscript($element, $function, $options)
+function mso_jsscript($element, $function, $options, $do = '', $posle = '')
 {
-	return "<script>$(document).ready(function(){\$('" . $element . "')." . $function . "({" . $options . "})})</script>";
+	return "<script>$(document).ready(function(){" . $do . "\$('" . $element . "')." . $function . "({" . $options . "})" . $posle . "})</script>";
 }
 
 /**
