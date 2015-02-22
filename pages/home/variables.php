@@ -47,6 +47,9 @@ $VAR['html_attr'] = 'lang="ru"'; // атрибуты корневого <HTML>
 #	$VAR['start_file'] = true; // SET_DIR . 'layout/header.php'
 #	$VAR['end_file'] = true;  // SET_DIR . 'layout/footer.php'
 #	
+#	$VAR['start_file_text'] = false; // подключаемый файл непосредственно перед page.php
+#	$VAR['end_file_text'] = false;// подключаемый файл непосредственно ппосле page.php
+#
 #	// файлы подключаемые перед и после в корневом index.php
 #	$VAR['before_file'] = false; // SET_DIR . 'before.php'
 #	$VAR['after_file'] = false; // SET_DIR . 'after.php'

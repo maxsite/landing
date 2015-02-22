@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.1 15/02/2015
+	ver. 25.2 22/02/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -50,9 +50,11 @@ $VAR['autoload_js_page'] = true;
 $VAR['less_out_in_file'] = false;
 $VAR['generate_static_page'] = false;
 $VAR['generate_static_page_base_url'] = '';
-$VAR['head_file'] = true; 
-$VAR['start_file'] = true; 
-$VAR['end_file'] = true; 
+$VAR['head_file'] = true;
+$VAR['start_file'] = true;
+$VAR['end_file'] = true;
+$VAR['start_file_text'] = false;
+$VAR['end_file_text'] = false;
 $VAR['before_file'] = false;
 $VAR['after_file'] = false;
 $VAR['event'] = false;
@@ -857,8 +859,18 @@ function mso_output_text()
 		}
 		
 		ob_start();
+		
+		// файл перед page.php
+		if ($VAR['start_file_text'] and $fd = mso_fe($VAR['start_file_text'])) require($fd);
+		
+		// файл page.php
 		require($fn);
+		
+		// файл после page.php
+		if ($VAR['end_file_text'] and $fd = mso_fe($VAR['end_file_text'])) require($fd);
+		
 		$out = ob_get_contents();
+
 		ob_end_clean();
 		
 		$out = mso_word_processing($out);
