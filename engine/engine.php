@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.2 22/02/2015
+	ver. 25.3 10/03/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -59,6 +59,12 @@ $VAR['before_file'] = false;
 $VAR['after_file'] = false;
 $VAR['event'] = false;
 
+$VAR['nd_css'] = 'css'; // каталог css
+$VAR['nd_less'] = 'css-less'; // каталог css-less
+$VAR['nd_images'] = 'images'; // каталог images
+$VAR['nd_js'] = 'js'; // каталог js
+
+
 // служебное
 $MSO['_use_cache'] = false;
 $MSO['_page_file'] = 'text.php'; // переопределяется в init.php страницы или environment/config.php
@@ -70,6 +76,12 @@ $MSO['_loaded_script'] = array(); // список загруженых js-скр
 $MSO['_loaded_css'] = array(); // список загруженых css-файлов
 
 
+// http-адрес сайта
+$base_url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
+$base_url .= "://" . $_SERVER['HTTP_HOST'];
+$base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
+
+define("BASEURL", $base_url);
  
 /**
 *  функция инициализации
@@ -78,26 +90,36 @@ function init()
 {
 	global $VAR, $MSO;
 	
-	$base_url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
-	$base_url .= "://" . $_SERVER['HTTP_HOST'];
-	$base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
-
-	define("BASEURL", $base_url); //http-адрес сайта Использовать только BASE_URL!
-	
-	define("BASE_DIR",BASEPATH); // аналог BASEPATH для унификации
+	define("BASE_DIR", BASEPATH); // аналог BASEPATH для унификации
 	define("BASE_URL", BASEURL); // аналог BASEURL для унификации
 	
-	define("PAGES_DIR", BASE_DIR . 'pages/'); // путь к /pages/ на сервере
-	define("PAGES_URL", BASE_URL . 'pages/'); // http-путь к /pages/ на сервере
+	// путь к /pages/ на сервере
+	if (!defined('PAGES_DIR')) define("PAGES_DIR", BASE_DIR . 'pages/'); 
 	
-	define("SET_DIR", BASE_DIR . 'set/'); // путь к /set/ на сервере — если используется
-	define("SET_URL", BASE_URL . 'set/'); // http-путь к /set/ на сервере
+	// http-путь к /pages/ на сервере
+	if (!defined('PAGES_URL')) define("PAGES_URL", BASE_URL . 'pages/'); 
 	
-	define("COMPONENTS_DIR", BASE_DIR . 'components/'); // путь к /components/ на сервере
-	define("COMPONENTS_URL", BASE_URL . 'components/'); // http-путь к /components/
+	// путь к /set/ на сервере — если используется
+	if (!defined('SET_DIR')) define("SET_DIR", BASE_DIR . 'set/'); 
 	
-	define("SNIPPETS_DIR", BASE_DIR . 'snippets/'); // путь к /snippets/ на сервере
-	define("SNIPPETS_URL", BASE_URL . 'snippets/'); // http-путь к /snippets/
+	// http-путь к /set/ на сервере
+	if (!defined('SET_URL')) define("SET_URL", BASE_URL . 'set/'); 
+	
+	// путь к /components/ на сервере
+	if (!defined('COMPONENTS_DIR')) define("COMPONENTS_DIR", BASE_DIR . 'components/'); 
+
+	// http-путь к /components/
+	if (!defined('COMPONENTS_URL')) define("COMPONENTS_URL", BASE_URL . 'components/'); 
+	
+	// каталог cache
+	if (!defined('CACHE_DIR')) define("CACHE_DIR", BASE_DIR . 'cache/'); 
+	
+	// путь к /snippets/ на сервере
+	if (!defined('SNIPPETS_DIR')) define("SNIPPETS_DIR", BASE_DIR . 'snippets/'); 
+
+	// http-путь к /snippets/
+	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'snippets/'); 
+	
 	
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
 	if (!defined('PAGE_404')) define('PAGE_404', '404');
@@ -336,9 +358,7 @@ function mso_lessc($less_file = '', $css_file = '', $css_url = '', $use_cache = 
 			$t_css = filemtime($css_file); // время css-файла
 			
 			// смотрим все файлы каталога
-			require_once('helpers/file_helper.php'); // хелпер для работы с файлами
-			
-			$all_files_in_dirs = get_filenames(dirname($less_file), true);
+			$all_files_in_dirs = mso_get_filenames(dirname($less_file), true);
 
 			foreach ($all_files_in_dirs as $file)
 			{
@@ -569,14 +589,12 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 	if (!$path) return array();
 	if (!is_dir($path)) return array(); // это не каталог
 
-	require_once(ENGINE_DIR . 'helpers/directory_helper.php'); // хелпер для работы с каталогами
-	
-	$files = directory_map($path, true); // получаем все файлы в каталоге
+	$files = mso_directory_map($path, true); // получаем все файлы в каталоге
 	if (!$files) return array();// если файлов нет, то выходим
 
 	$all_files = array(); // результирующий массив с нашими файлами
 	
-	// функция directory_map возвращает не только файлы, но и подкаталоги
+	// функция mso_directory_map возвращает не только файлы, но и подкаталоги
 	// нам нужно оставить только файлы. Делаем это в цикле
 	foreach ($files as $file)
 	{
@@ -618,9 +636,8 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 */
 function mso_get_dirs($path, $exclude = array(), $need_file = false)
 {
-	require_once(ENGINE_DIR . 'helpers/directory_helper.php'); // хелпер для работы с каталогами
-	
-	if ($all_dirs = directory_map($path, true))
+
+	if ($all_dirs = mso_directory_map($path, true))
 	{
 		$dirs = array();
 		foreach ($all_dirs as $d)
@@ -710,9 +727,11 @@ function mso_load_css($url = '', $nodouble = true)
 *  
 *  @return string
 */
-function mso_autoload($dir = 'js', $in_base = true, $in_page = true, $auto_dir = '/autoload/')
+function mso_autoload($dir = '', $in_base = true, $in_page = true, $auto_dir = '/autoload/')
 {
 	global $VAR;
+	
+	if (!$dir) return; // если каталог не указан, выходим
 	
 	$a1 = $a2 = array();
 	
@@ -840,7 +859,7 @@ function mso_output_text()
 		}
 		
 		$cache_file = str_replace(array('.', '/', '\\', '?'), '-', $cache_file);
-		$cache_file = BASE_DIR . 'cache/' . $cache_file . '.html';
+		$cache_file = CACHE_DIR . $cache_file . '.html';
 		
 		// если есть кеш, то отдаем из него
 		if (!$VAR['nocache'] and mso_fe($cache_file))
@@ -1256,7 +1275,7 @@ function mso_compress_text($text)
 */
 function mso_component($component, $OPTIONS = array())
 {
-	if ($fn = mso_fe(BASE_DIR . 'components/' . $component . '/' . $component . '.php')) require($fn);
+	if ($fn = mso_fe(COMPONENTS_DIR . $component . '/' . $component . '.php')) require($fn);
 }
 
 /**
@@ -1472,19 +1491,19 @@ function mso_head()
 		
 	if ($VAR['nofavicon'] === false)
 	{
-		if (mso_fe(BASE_DIR . 'images/favicon.png'))
-			echo NR . '<link rel="shortcut icon" href="' . $baseurl . 'images/favicon.png" type="image/x-icon">';
+		if (mso_fe(BASE_DIR . $VAR['nd_images'] . '/favicon.png'))
+			echo NR . '<link rel="shortcut icon" href="' . $baseurl . $VAR['nd_images'] . '/favicon.png" type="image/x-icon">';
 	}
 	
 	if ($VAR['nocss'] === false)
 	{
 		// какой-то ещё свой вариант для less-компиляции
-		if ($fn = mso_fe(BASE_DIR . 'css-less/less.php')) require($fn);
+		if ($fn = mso_fe(BASE_DIR . $VAR['nd_less'] . '/less.php')) require($fn);
 		
-		echo mso_lessc(BASE_DIR . 'css-less/style.less', BASE_DIR . 'css/style.css', $baseurl . 'css/style.css', true, true, true);
+		echo mso_lessc(BASE_DIR . $VAR['nd_less'] . '/style.less', BASE_DIR . $VAR['nd_css'] . '/style.css', $baseurl . $VAR['nd_css'] . '/style.css', true, true, true);
 		
 		// autoload css-файлов из BASE_DIR
-		echo mso_autoload('css', true, false, '/'); 
+		echo mso_autoload($VAR['nd_css'], true, false, '/'); 
 	}
 	
 	if ($VAR['nojs'] === false)
@@ -1492,22 +1511,22 @@ function mso_head()
 		// jQuery с 22.0 загружается на общих основаниях в /autoload/
 		// if (mso_fe(BASE_DIR . 'js/jquery.min.js')) echo mso_load_script($baseurl .  'js/jquery.min.js');
 		
-		echo mso_autoload('js', true, false); // autoload js-файлов из BASE_DIR
+		echo mso_autoload($VAR['nd_js'], true, false); // autoload js-файлов из BASE_DIR
 	}
 	
 	if($VAR['autoload_css_page'] === true) // разрешена автозагрузка из текущей page
 	{
 		// какой-то ещё свой вариант для less-компиляции
-		if ($fn = mso_fe(CURRENT_PAGE_DIR . 'css-less/less.php')) require($fn);
+		if ($fn = mso_fe(CURRENT_PAGE_DIR . $VAR['nd_less'] . '/less.php')) require($fn);
 		
 		// autoload из каталога page css и css-less с компиляцией
-		echo mso_lessc(CURRENT_PAGE_DIR . 'css-less/style.less', CURRENT_PAGE_DIR . 'css/style.css', $current_page_url . 'css/style.css', true, true, true);
+		echo mso_lessc(CURRENT_PAGE_DIR . $VAR['nd_less'] . '/style.less', CURRENT_PAGE_DIR . $VAR['nd_css'] . '/style.css', $current_page_url . $VAR['nd_css'] . '/style.css', true, true, true);
 		
-		echo mso_autoload('css', false, true, '/');
+		echo mso_autoload($VAR['nd_css'], false, true, '/');
 	}
 	
 	if ($VAR['autoload_js_page'] === true) // разрешена автозагрузка из текущей page
-		echo mso_autoload('js', false, true); // autoload js-файлов из CURRENT_PAGE_DIR
+		echo mso_autoload($VAR['nd_js'], false, true); // autoload js-файлов из CURRENT_PAGE_DIR
 }
 
 /**
@@ -1530,12 +1549,12 @@ function mso_lazy($to = null)
 	{
 		if ($VAR['nojs'] === false)
 		{
-			$out .= mso_autoload('js', true, false, '/lazy/'); // autoload js-файлов из BASE_DIR
+			$out .= mso_autoload($VAR['nd_js'], true, false, '/lazy/'); // autoload js-файлов из BASE_DIR
 			// pr($out, 1);
 		}
 		
 		if ($VAR['autoload_js_page'] === true) // разрешена автозагрузка из текущей page
-			$out .= mso_autoload('js', false, true, '/lazy/'); // autoload js-файлов из CURRENT_PAGE_DIR
+			$out .= mso_autoload($VAR['nd_js'], false, true, '/lazy/'); // autoload js-файлов из CURRENT_PAGE_DIR
 		
 		if ($VAR['nojs'] === false and mso_fe(BASE_DIR . 'js/my.js')) 
 			$out .= mso_load_script(BASE_URL . 'js/my.js');
@@ -1584,7 +1603,7 @@ function mso_ab($items = array())
 function mso_add_cache($key, $data)
 {
 	// ключ кеша шифруется по адресу сайта
-	$file = BASE_DIR . 'cache/' . strrev(md5($key . BASE_URL));
+	$file = CACHE_DIR . strrev(md5($key . BASE_URL));
 	
 	$data = serialize($data); // все даные через серилизацию
 	$fp = fopen($file, "w");
@@ -1608,7 +1627,7 @@ function mso_add_cache($key, $data)
 function mso_get_cache($key, $time = 3600, $r = false)
 {
 	// ключ кеша шифруется по адресу сайта
-	$file = BASE_DIR . 'cache/' . strrev(md5($key . BASE_URL));
+	$file = CACHE_DIR . strrev(md5($key . BASE_URL));
 	
 	if (!file_exists($file)) return $r; // нет кеша
 	
@@ -2189,6 +2208,85 @@ function mso_snippet($snippet = '', $return_content = true) {
 	if (!$snippet) return;
 	
 	return mso_fr($snippet . '.php', SNIPPETS_DIR, $return_content);
+}
+
+/**
+ * CodeIgniter File Helpers
+ *
+ * @package		CodeIgniter
+ * @author		ExpressionEngine Dev Team
+ * @link		http://codeigniter.com/user_guide/helpers/file_helpers.html
+ */
+function mso_get_filenames($source_dir, $include_path = FALSE, $_recursion = FALSE)
+{
+	static $_filedata = array();
+
+	if ($fp = @opendir($source_dir))
+	{
+		// reset the array and make sure $source_dir has a trailing slash on the initial call
+		if ($_recursion === FALSE)
+		{
+			$_filedata = array();
+			$source_dir = rtrim(realpath($source_dir), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+		}
+
+		while (FALSE !== ($file = readdir($fp)))
+		{
+			if (@is_dir($source_dir.$file) && strncmp($file, '.', 1) !== 0)
+			{
+				mso_get_filenames($source_dir.$file.DIRECTORY_SEPARATOR, $include_path, TRUE);
+			}
+			elseif (strncmp($file, '.', 1) !== 0)
+			{
+				$_filedata[] = ($include_path == TRUE) ? $source_dir.$file : $file;
+			}
+		}
+		return $_filedata;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+/**
+ * CodeIgniter Directory Helpers
+ *
+ * @package		CodeIgniter
+ * @author		ExpressionEngine Dev Team
+ * @link		http://codeigniter.com/user_guide/helpers/directory_helper.html
+ */
+function mso_directory_map($source_dir, $directory_depth = 0, $hidden = FALSE)
+{
+	if ($fp = @opendir($source_dir))
+	{
+		$filedata	= array();
+		$new_depth	= $directory_depth - 1;
+		$source_dir	= rtrim($source_dir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+
+		while (FALSE !== ($file = readdir($fp)))
+		{
+			// Remove '.', '..', and hidden files [optional]
+			if ( ! trim($file, '.') OR ($hidden == FALSE && $file[0] == '.'))
+			{
+				continue;
+			}
+
+			if (($directory_depth < 1 OR $new_depth > 0) && @is_dir($source_dir.$file))
+			{
+				$filedata[$file] = mso_directory_map($source_dir.$file.DIRECTORY_SEPARATOR, $new_depth, $hidden);
+			}
+			else
+			{
+				$filedata[] = $file;
+			}
+		}
+
+		closedir($fp);
+		return $filedata;
+	}
+
+	return FALSE;
 }
 
 #end of file
