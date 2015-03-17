@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.3 10/03/2015
+	ver. 25.4 17/03/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -1517,16 +1517,16 @@ function mso_head()
 	if($VAR['autoload_css_page'] === true) // разрешена автозагрузка из текущей page
 	{
 		// какой-то ещё свой вариант для less-компиляции
-		if ($fn = mso_fe(CURRENT_PAGE_DIR . $VAR['nd_less'] . '/less.php')) require($fn);
+		if ($fn = mso_fe(CURRENT_PAGE_DIR . 'css-less/less.php')) require($fn);
 		
 		// autoload из каталога page css и css-less с компиляцией
-		echo mso_lessc(CURRENT_PAGE_DIR . $VAR['nd_less'] . '/style.less', CURRENT_PAGE_DIR . $VAR['nd_css'] . '/style.css', $current_page_url . $VAR['nd_css'] . '/style.css', true, true, true);
+		echo mso_lessc(CURRENT_PAGE_DIR . 'css-less/style.less', CURRENT_PAGE_DIR . 'css/style.css', $current_page_url . 'css/style.css', true, true, true);
 		
-		echo mso_autoload($VAR['nd_css'], false, true, '/');
+		echo mso_autoload('css', false, true, '/');
 	}
 	
 	if ($VAR['autoload_js_page'] === true) // разрешена автозагрузка из текущей page
-		echo mso_autoload($VAR['nd_js'], false, true); // autoload js-файлов из CURRENT_PAGE_DIR
+		echo mso_autoload('js', false, true); // autoload js-файлов из CURRENT_PAGE_DIR
 }
 
 /**
@@ -1554,7 +1554,7 @@ function mso_lazy($to = null)
 		}
 		
 		if ($VAR['autoload_js_page'] === true) // разрешена автозагрузка из текущей page
-			$out .= mso_autoload($VAR['nd_js'], false, true, '/lazy/'); // autoload js-файлов из CURRENT_PAGE_DIR
+			$out .= mso_autoload('js', false, true, '/lazy/'); // autoload js-файлов из CURRENT_PAGE_DIR
 		
 		if ($VAR['nojs'] === false and mso_fe(BASE_DIR . 'js/my.js')) 
 			$out .= mso_load_script(BASE_URL . 'js/my.js');
