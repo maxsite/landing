@@ -6,7 +6,7 @@
 	Подключение в environment/config.php
 	или в init.php страницы
 	
-	require_once(ENGINE_DIR . 'auth/auth.php');
+	require_once(ENGINE_DIR . 'additions/auth.php');
 	
 */
 
@@ -101,6 +101,13 @@ function mso_auth_dialog($OPTIONS)
 			if (!isset($_SESSION)) session_start();
 			$_SESSION[$OPTIONS['session']] = 1; // ставим признак 
 			mso_set_val('auth', true); // запоминаем
+		}
+		else
+		{
+			header('WWW-Authenticate: Basic realm=""');
+			header('HTTP/1.0 401 Unauthorized');
+			// echo 'Error login/password';
+			exit;
 		}
 	}
 }
