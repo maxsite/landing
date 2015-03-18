@@ -16,6 +16,7 @@ class PD
 	protected $exclude; // исключить
 	protected $dir; // основной каталог страниц
 	protected $url; // основной http-адрес
+	protected $cache_time = 3600; // время кеша
 
 	
 	# по конструктору сразу получаем данные
@@ -34,7 +35,13 @@ class PD
 	function set_pages($pages)
 	{
 		$this->pages = $pages;
-	}	
+	}
+	
+	# добавить данные 
+	function set_cache_time($cache_time)
+	{
+		$this->cache_time = $cache_time;
+	}
 	
 	# соединить данные 
 	function merge_pages($pages)
@@ -45,7 +52,7 @@ class PD
 	# получить pages
 	function load_pages($dir = false, $url = false, $include = array(), $exclude = array())
 	{
-		return mso_pages_data($include, $exclude, $dir, $url);
+		return mso_pages_data($include, $exclude, $dir, $url, $this->cache_time);
 	}
 	
 	# поиск вхождения $find (строка через запятую) в $DATA[$key]

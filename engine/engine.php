@@ -1851,7 +1851,7 @@ function mso_holder($width = 100, $height = 100, $text = true, $background_color
 *          [tag] => first, second
 *   )
 */
-function mso_pages_data($include = array(), $exclude = array(), $dir = false, $url = false)
+function mso_pages_data($include = array(), $exclude = array(), $dir = false, $url = false, $cache_time = 3600)
 {
 	static $cache = array();
 	
@@ -1863,7 +1863,7 @@ function mso_pages_data($include = array(), $exclude = array(), $dir = false, $u
 	else
 	{
 		// возможно есть данные в файловом кеше
-		if ($out = mso_get_cache('pages_data' . $cache_key, 3600))
+		if ($out = mso_get_cache('pages_data' . $cache_key, $cache_time))
 		{
 			$cache[$cache_key] = $out; // статичный кеш
 			return $out;
