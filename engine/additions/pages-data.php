@@ -3,26 +3,40 @@
 /*
 	Различные функции для работы с $DATA страниц
 	
-	require_once(ENGINE_DIR . 'additions/pages-data.php');
+	
+	require_once(ENGINE_DIR . 'additions/pages-data.php'); // подключаем
+
+	$pd = new PD( (LOCALHOST ? 1 : 3600) ); // время кэша
+	
+	$pd->load_pages(); // получили данные
+	
+	$pd->find_key_bool('article'); // записи, где $DATA['article'] = true;
+	
+	$pd->sort_by_date(); // сортировка по дате - новые вверху
+	
+	$all = $pd->get_pages(); // готовый результат массив данных
+
+	pr($all); // дальше по своему усмотрению
 	
 */
 
 class PD 
 {
 	protected $pages; // полученные данные страниц
-	
-	// для mso_pages_data()
-	protected $include; // включать только
-	protected $exclude; // исключить
-	protected $dir; // основной каталог страниц
-	protected $url; // основной http-адрес
 	protected $cache_time = 3600; // время кеша
-
 	
-	# по конструктору сразу получаем данные
-	function __construct($dir = false, $url = false, $include = array(), $exclude = array())
+	# конструктор
+	function __construct($cache_time = 3600)
 	{
-		$this->pages =  $this->load_pages($dir, $url, $include, $exclude);
+		$this->cache_time = $cache_time;
+	}
+	
+	# получить pages через mso_pages_data
+	function load_pages($dir = false, $url = false, $include = array(), $exclude = array())
+	{
+		$this->pages = mso_pages_data($include, $exclude, $dir, $url, $this->cache_time);
+		
+		return $this->pages;
 	}
 	
 	# вернуть данные 
@@ -49,12 +63,6 @@ class PD
 		$this->pages = array_merge($this->pages, $pages);
 	}
 	
-	# получить pages
-	function load_pages($dir = false, $url = false, $include = array(), $exclude = array())
-	{
-		return mso_pages_data($include, $exclude, $dir, $url, $this->cache_time);
-	}
-	
 	# поиск вхождения $find (строка через запятую) в $DATA[$key]
 	# на выходе массив найденных страниц
 	function find_key($find, $key)
@@ -78,7 +86,6 @@ class PD
 		
 		$this->pages = $out;
 	}
-
 
 	# получить данные $DATA ключа $key из всех pages
 	# значение => количество
@@ -126,7 +133,6 @@ class PD
 		return ($a['date'] > $b['date']) ? -1 : 1;
 	}
 
-
 	# отсортировать по полю date — новые выше
 	function sort_by_date()
 	{
@@ -136,6 +142,25 @@ class PD
 		
 		$this->pages = $pages;
 	}
+	
+	# пользовательская к mso_pages_data_sort_by_date()
+	protected function _cmp_sort_by_title($a, $b) 
+	{
+		if ($a['title'] == $b['title']) return 0;
+		
+		return ($a['title'] > $b['title']) ? 1 : -1;
+	}
+
+	# отсортировать по полю title
+	function sort_by_title()
+	{
+		$pages = $this->pages;
+		
+		uasort($pages, array("PD", "_cmp_sort_by_title"));
+		
+		$this->pages = $pages;
+	}	
+	
 
 }
 
