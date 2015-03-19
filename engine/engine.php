@@ -1556,8 +1556,8 @@ function mso_lazy($to = null)
 		if ($VAR['autoload_js_page'] === true) // разрешена автозагрузка из текущей page
 			$out .= mso_autoload('js', false, true, '/lazy/'); // autoload js-файлов из CURRENT_PAGE_DIR
 		
-		if ($VAR['nojs'] === false and mso_fe(BASE_DIR . 'js/my.js')) 
-			$out .= mso_load_script(BASE_URL . 'js/my.js');
+		if ($VAR['nojs'] === false and mso_fe(BASE_DIR . $VAR['nd_js'] . '/my.js')) 
+			$out .= mso_load_script(BASE_URL . $VAR['nd_js'] . '/my.js');
 		
 		$out .= $to_out; // вывод остального
 		
@@ -1892,6 +1892,8 @@ function mso_pages_data($include = array(), $exclude = array(), $dir = false, $u
 		
 		foreach ($pages as $page)
 		{
+			if (!file_exists($dir . $page . '/text.php')) continue; // если нет text.php выходим
+		
 			$page_k = $prefix . $page;
 		
 			if ($page == HOME_PAGE)
@@ -2203,8 +2205,8 @@ function mso_event($event, $args = array())
 *  
 *  @return string
 */
-function mso_snippet($snippet = '', $return_content = true) {
-	
+function mso_snippet($snippet = '', $return_content = true) 
+{
 	if (!$snippet) return;
 	
 	return mso_fr($snippet . '.php', SNIPPETS_DIR, $return_content);
