@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.4 17/03/2015
+	ver. 25.5 5/04/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -75,6 +75,9 @@ $MSO['_less_complier_timeout'] = 0; // задержка компилятора �
 $MSO['_loaded_script'] = array(); // список загруженых js-скриптов 
 $MSO['_loaded_css'] = array(); // список загруженых css-файлов
 
+$MSO['_routing_page'] = '_routing'; // страница роутинга; переопределить можно в environment/config.php
+
+$MSO['_cache_suffix'] = ''; // добавка к имени файла кэша
 
 // http-адрес сайта
 $base_url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
@@ -120,13 +123,22 @@ function init()
 	// http-путь к /snippets/
 	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'snippets/'); 
 	
-	
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
 	if (!defined('PAGE_404')) define('PAGE_404', '404');
 	
+	// если в адресе есть localhost, то выставляем константу
+	if (stripos(BASEURL, '/localhost/') === false) 
+		define('LOCALHOST', false);
+	else
+		define('LOCALHOST', true);
+		
 	$page = (isset($_GET['page'])) ? $_GET['page'] : HOME_PAGE;
 	
-	// обязательный файл text.php
+	$page = str_replace('.', '_', $page); 
+	$page = str_replace('~', '-', $page);
+	$page = str_replace('\\', '-', $page);
+	
+	// обязательный файл text.php — задан в $MSO['_page_file']
 	if ( file_exists(PAGES_DIR . $page . '/' . $MSO['_page_file']) )
 	{
 		define('CURRENT_PAGE', $page); // имя page
@@ -143,12 +155,24 @@ function init()
 			if ( file_exists(PAGES_DIR . $page . '/' . $MSO['_page_file']) )
 				define('CURRENT_PAGE', $page);
 			else 
-				define('CURRENT_PAGE', PAGE_404);
+				$page = false; // не удалось определить page
 		}
 		else
 		{
-			define('CURRENT_PAGE', PAGE_404);
+			$page = false; // не удалось определить page
 		}
+	}
+	
+	// не удалось определить page — routing или PAGE_404
+	if ($page === false)
+	{
+		$page = PAGE_404;
+		
+		// возможно указана страница routing
+		if ( file_exists(PAGES_DIR . $MSO['_routing_page'] . '/' . $MSO['_page_file']) )
+			$page = $MSO['_routing_page']; // отдаем её как есть
+		
+		define('CURRENT_PAGE', $page);
 	}
 	
 	define('CURRENT_PAGE_DIR', PAGES_DIR . CURRENT_PAGE . '/'); // путь на сервере к текущей page
@@ -159,15 +183,8 @@ function init()
 	if ($VAR['start_file'] === true) $VAR['start_file'] = CURRENT_PAGE_DIR . 'header.php';
 	if ($VAR['end_file'] === true) $VAR['end_file'] = CURRENT_PAGE_DIR . 'footer.php';
 	
-	// если в адресе есть localhost, то выставляем константу
-	if (stripos(BASEURL, '/localhost/') === false) 
-		define('LOCALHOST', false);
-	else
-		define('LOCALHOST', true);
-	
-	
 	// может есть init.php
-	if ($fn = mso_fe(PAGES_DIR . CURRENT_PAGE . '/init.php')) require($fn);
+	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'init.php')) require($fn);
 }
 
 /**
@@ -851,7 +868,7 @@ function mso_output_text()
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . $MSO['_page_file']))
 	{
 		// имя кеша строится по фиксированному шаблону
-		$cache_file = CURRENT_PAGE . '_' . $MSO['_page_file'];
+		$cache_file = CURRENT_PAGE . '_' . $MSO['_page_file'] . $MSO['_cache_suffix'];
 		
 		if ( isset($_SERVER['REQUEST_URI']) and $_SERVER['REQUEST_URI'] and (strpos($_SERVER['REQUEST_URI'], '?') !== FALSE) )
 		{
@@ -1159,7 +1176,6 @@ function mso_clean_html_posle($matches)
 	return base64_decode($matches[1]);
 }
 
-# 
 /**
 *  script, который загоняется в [html_base64]
 *  
@@ -1330,6 +1346,7 @@ function mso_current_url($explode = false, $absolute = false, $delete_request = 
 	$url = str_replace(BASE_URL, "", $url);
 	$url = trim( str_replace('/', ' ', $url) );
 	$url = str_replace(' ', '/', $url);
+	$url = urldecode($url);
 	
 	if ($explode) $url = explode('/', $url);
 	
