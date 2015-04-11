@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 25.5 5/04/2015
+	ver. 26.0 9/04/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -12,7 +12,6 @@
 	Copyright:
 		MaxSite CMS: http://max-3000.com/
 		CodeIgniter: http://codeigniter.com/
-		Less.php: http://lessphp.gpeasy.com/
 		Textile: http://txstyle.org/article/36/php-textile
 		Markdown Extra: http://michelf.ca/projects/php-markdown/
 
@@ -29,7 +28,7 @@ $META = array();
 $META_LINK = array();
 $DATA = array();
 
-$VAR['autotag'] = false;
+// $VAR['autotag'] = false; // пока не используется
 $VAR['autotag_my'] = false;
 $VAR['bbcode'] = false;
 $VAR['markdown'] = false;
@@ -47,7 +46,6 @@ $VAR['body_attr'] = '';
 $VAR['no_output_only_file'] = false;
 $VAR['autoload_css_page'] = true;
 $VAR['autoload_js_page'] = true;
-$VAR['less_out_in_file'] = false;
 $VAR['generate_static_page'] = false;
 $VAR['generate_static_page_base_url'] = '';
 $VAR['head_file'] = true;
@@ -60,7 +58,6 @@ $VAR['after_file'] = false;
 $VAR['event'] = false;
 
 $VAR['nd_css'] = 'css'; // каталог css
-$VAR['nd_less'] = 'css-less'; // каталог css-less
 $VAR['nd_images'] = 'images'; // каталог images
 $VAR['nd_js'] = 'js'; // каталог js
 
@@ -68,10 +65,6 @@ $VAR['nd_js'] = 'js'; // каталог js
 // служебное
 $MSO['_use_cache'] = false;
 $MSO['_page_file'] = 'text.php'; // переопределяется в init.php страницы или environment/config.php
-$MSO['_less_use_mini'] = true;
-$MSO['_less_not_use_cache'] = false;
-$MSO['_less_complier'] = 'mso_less1'; // функция less-компилятора
-$MSO['_less_complier_timeout'] = 0; // задержка компилятора в секундах
 $MSO['_loaded_script'] = array(); // список загруженых js-скриптов 
 $MSO['_loaded_css'] = array(); // список загруженых css-файлов
 
@@ -315,284 +308,6 @@ function mso_fr($file, $dir = '', $return_content = false)
 }
 
 /**
-*  компилятор LESS в CSS
-*  на выходе css-подключение, либо содержимое css-файла (переключается через $css_url)
-*  если первый параметр — массив, то остальные игнорируются. В массиве ключи — опции
-*  
-*  @param $less_file - входной less-файл (полный путь на сервере)
-*  @param $css_file - выходной css-файл (полный путь на сервере)
-*  @param $css_url - полный http-адрес css-файла. Если $css_url = '', то отдается содержимое css-файла
-*  @param $use_cache - разрешить использование кэширования LESS-файла (определяется по времени файлов)
-*  @param $use_mini - использовать сжатие css-кода
-*  @param $use_mini_n - если включено сжатие, то удалять переносы строк
-*  
-*/
-function mso_lessc($less_file = '', $css_file = '', $css_url = '', $use_cache = false, $use_mini = true, $use_mini_n = true)
-{
-	global $MSO, $VAR;
-	
-	// если false, то ничего не делаем и сразу выходим
-	if ($MSO['_less_complier'] === false) return;
-	
-	if ($VAR['remove_protocol']) $css_url = mso_remove_protocol($css_url);
-
-	// если входящего style.less ($less_file) нет, то подключаем style.css (указан в $css_url)
-	// но есть $css_file
-	// и выходим 
-	if (!file_exists($less_file))
-	{
-		if (file_exists($css_file))
-			// return NR . '<link rel="stylesheet" href="' . $css_url . '">';
-			return mso_load_css($css_url);
-		else
-			return '';
-	}
-	
-	$MSO['_less_file'] = $less_file; // текущий less-файл
-	$MSO['_less_file_dir'] = dirname($less_file) . '/'; // каталог less файла
-	
-	if ($MSO['_less_not_use_cache'] === true) $use_cache = false; // если установлен флаг, то отключаем кеши
-	
-	if (is_array($less_file)) // все параметры в массиве
-	{
-		$options = $less_file; // для красоты кода и чтобы не путаться
-		
-		$less_file = isset($options['less_file']) ? $options['less_file'] : '';
-		$css_file = isset($options['css_file']) ? $options['css_file'] : '';
-		$css_url = isset($options['css_url']) ? $options['css_url'] : '';
-		$use_cache = isset($options['use_cache']) ? $options['use_cache'] : false;
-		$use_mini = isset($options['use_mini']) ? $options['use_mini'] : true;
-		$use_mini_n = isset($options['use_mini_n']) ? $options['use_mini_n'] : false;
-	}
-	
-	if (!$less_file or !$css_file) return ''; // не указаны файлы
-	
-	if ($use_cache) // проверка кэша
-	{
-		if (file_exists($less_file) and file_exists($css_file))
-		{
-			$flag_compiling = false; // флаг == true — требуется компиляция 
-			$t_css = filemtime($css_file); // время css-файла
-			
-			// смотрим все файлы каталога
-			$all_files_in_dirs = mso_get_filenames(dirname($less_file), true);
-
-			foreach ($all_files_in_dirs as $file)
-			{
-				if (substr(strrchr($file, '.'), 1) !== 'less') continue; // проверка расширения файла
-				
-				if (filemtime($file) > $t_css) // файл старше css — нужна компиляция
-				{
-					$flag_compiling = true; // нужна компиляция
-					break;
-				}
-			}
-			
-			if (!$flag_compiling) // можно отдать из кеша
-			{
-				if ($css_url) 
-					// в виде имени файла
-					// return NR . '<link rel="stylesheet" href="' . $css_url . '">';
-					return mso_load_css($css_url);
-				else
-					// в виде содержимого
-					return file_get_contents($css_file);
-			}
-		}
-	}
-
-	if (file_exists($less_file)) 
-		$fc_all = file_get_contents($less_file);
-	else 
-		return ''; // нет файла, выходим
-
-	// проверка на разрешение записывать css-файл
-	if (file_exists($css_file) and !is_writable($css_file)) 
-		return 'LESS: результирующий css-файл не имеет разрешений на запись.'; 
-	
-	if ($fc_all)
-	{
-		// возможно есть php-файл для своих функций
-		// строится как исходный + .php
-		// пример http://leafo.net/lessphp/docs/#custom_functions
-		if (file_exists($less_file . '.php')) require_once($less_file . '.php');
-		
-		// в коде могут быть специальные команды 
-		// универсальная конструкция: @MSO_IMPORT_ALL(каталог);
-		$fc_all = preg_replace_callback('!(@MSO_IMPORT_ALL\()(.*?)(\);)!is', '_mso_less_import_all_callback', $fc_all);
-		
-		// в тексте исходного файла $fc_all может быть php-код
-		ob_start();
-		eval( '?>' . $fc_all . '<?php ');
-		$fc_all = ob_get_contents();
-		ob_end_clean();		
-		
-		if ($VAR['less_out_in_file']) // можно сохранить в указанный файл 
-		{
-			$fp1 = fopen(BASE_DIR . $VAR['less_out_in_file'], "w");
-			fwrite($fp1, $fc_all);
-			fclose($fp1);
-		}
-		
-		$out = '';
-		
-		// pr($fc_all);
-		
-		// функции компилятора вынесены отдельно
-		// $MSO['_less_complier'] = 'mso_less1';
-		// $MSO['_less_complier'] = 'custom'; // собственная компиляция, например через http://winless.org/ 
-	
-		if (function_exists($MSO['_less_complier'])) // есть такая функция
-		{
-			$function_less = $MSO['_less_complier'];
-			$out = $function_less($fc_all, $less_file, $use_mini);
-		}
-		else
-		{
-			// функции нет — своя компиляция
-			if ($css_url) 
-			{
-				if ($MSO['_less_complier_timeout']) sleep($MSO['_less_complier_timeout']);
-				
-				return mso_load_css($css_url); // в виде имени файла
-			}
-			else
-			{
-				return '';
-			}
-		}
-
-		// сжатие кода
-		// $MSO['_less_use_mini'] для отладки можно выставлять в false, тогда сжатия не будет
-		if ($use_mini and $MSO['_less_use_mini'] === true)
-		{
-			if ($use_mini_n)
-			{
-				$out = str_replace("\t", ' ', $out);
-				$out = str_replace(array("\r\n", "\r", "\n", '  ', '    '), '', $out);
-			}
-			
-			$out = str_replace("\n\t", '', $out);
-			$out = str_replace("\n}", '}', $out);
-			$out = str_replace('; ', ';', $out);
-			$out = str_replace(';}', '}', $out);
-			$out = str_replace(': ', ':', $out);
-			$out = str_replace('{ ', '{', $out);
-			$out = str_replace(' }', '}', $out);
-			$out = str_replace(' {', '{', $out);
-			$out = str_replace(', ', ',', $out);
-			$out = str_replace(' > ', '>', $out);		
-			$out = str_replace('} ', '}', $out);
-			$out = str_replace('  ', ' ', $out);
-		}
-		
-		$fp = fopen($css_file, "w");
-		fwrite($fp, $out);
-		fclose($fp);
-		
-		if ($css_url) 
-			return mso_load_css($css_url); // в виде имени файла
-		else
-			return $out; // в виде содержимого
-	}
-}
-
- 
-/**
-*  колбак функция для @MSO_IMPORT_ALL(каталог);
-*/
-function _mso_less_import_all_callback($matches)
-{
-	global $MSO;
-	
-	$dir = trim($matches[2]);
-
-	$files = mso_get_path_files($MSO['_less_file_dir'] . $dir . '/', $dir . '/', true, array('less'));
-
-	$m = '';
-	foreach($files as $file)
-	{
-		// $m .= '@import \'' . $file . '\';' . NR; // старый вариант через встроенный @import
-		
-		$m .= '// ================== ' . $file . ' ================== ' . NR . NR;
-		$m .= file_get_contents($MSO['_less_file_dir'] . $file) . NR;
-	}
-	
-	return $m;
-}
-
-/**
-*  служебная функция, срабатывающая при ошибке компиляции LESS
-*/
-function _mso_less_exception($message, $text)
-{
-	// пробуем оформить более внятный вывод ошибки с исходным кодом
-	
-	$out = '<pre style="color: red;">lessphp fatal error: ' . $message . '</pre>';
-	
-	$text = NR . htmlspecialchars($text);
-	$text = str_replace("\n", "<li style='margin:0 0 0 30px'>", $text);
-	
-	$out .= '<ol style="height: 500px; overflow: scroll; background: #eee; font-family: monospace; ">' . $text . '</ol>';
-	
-	return $out;
-}
-
-/**
-*  Старый LESS-компилятор автоматом перекидывается на mso_less2
-*/
-function mso_less1($fc_all, $less_file, $use_mini)
-{
-	return mso_less2($fc_all, $less_file, $use_mini);
-}
-
-/**
-*  LESS-компилятор от http://lessphp.gpeasy.com - поновее, но мало тестировался
-*  
-*  @param $fc_all входящий текст less-файл
-*  @param $less_file имя less-файла
-*  @param $use_mini использовать сжатие
-*  
-*  @return string
-*/
-function mso_less2($fc_all, $less_file, $use_mini)
-{
-	global $MSO;
-	
-	require_once('less/lessc.inc.php');
-		
-	$options = array(
-		'compress' => true, 
-		'relativeUrls' => false,
-	);
-		
-	$compiler = new Less_Parser($options);
-	
-	$compiler->SetImportDirs(array( dirname($less_file) => dirname($less_file) ));
-	
-	try
-	{
-		$compiler->parse($fc_all);
-		$out = $compiler->getCss();
-		
-		// код уже сжат, рассжимаем, если нужно 
-		if (!($use_mini and $MSO['_less_use_mini'] === true))
-		{
-			$out = str_replace('}', "\n}\n", $out);
-			$out = str_replace('{', " {\n", $out);
-			$out = str_replace(';', ";\n", $out);
-		}
-	}
-	catch (Exception $ex)
-	{
-		$out = _mso_less_exception($ex->getMessage(), $fc_all);
-		die($out);
-	}
-	
-	return $out;
-}
-
-/**
 *  функция возвращает массив $path_url-файлов по указанному $path - каталог на сервере
 *  
 *  @param $full_path - нужно ли возвращать полный адрес (true) или только имя файла (false)
@@ -808,7 +523,7 @@ function mso_stat_out()
 	if ($VAR['textile']) $out .= ' | Textile';
 	if ($VAR['nocss']) $out .= ' | NoCSS';
 	if ($VAR['nojs']) $out .= ' | NoJS';
-	if ($VAR['autotag']) $out .= ' | AutoTag';
+	// if ($VAR['autotag']) $out .= ' | AutoTag';
 	if ($VAR['autotag_my']) $out .= ' | AutoTag (' . $VAR['autotag_my'] . ')';
 	if ($VAR['autopre']) $out .= ' | AutoPRE';
 	if ($VAR['compress_text']) $out .= ' | Compress text';
@@ -967,7 +682,9 @@ function mso_word_processing($out, $var = false)
 	}
 	
 	if ($var['autoremove']) $out = mso_autoremove($out);
-	if ($var['autotag']) $out = mso_autotag($out);
+	
+	// if ($var['autotag']) $out = mso_autotag($out);
+	
 	if ($var['autopre']) $out = mso_autopre($out);
 
 	if ($var['bbcode'] and mso_fe(ENGINE_DIR . 'bbcode/index.php')) 
@@ -993,144 +710,7 @@ function mso_word_processing($out, $var = false)
 	if ($var['remove_protocol']) $out = mso_remove_protocol($out);
 	if ($var['compress_text']) $out = mso_compress_text($out);
 		
-	// удалить спецкод, если остался в тексте
-	$out = str_replace(array('[html]', '[/html]', '[html_r]', '[/html_r]'), '', $out);
-	
 	return $out;
-}
-
-/**
-*  авторасстановка тэгов
-*  
-*  @param $pee входной текст 
-*  
-*  @return string
-*/
-function mso_autotag($pee)
-{
-	$pee = str_replace(array("\r\n", "\r"), "\n", $pee);
-	
-	# если html-код в [html_r] код [/html_r]
-	# в отличие от [html] — отдаёт полностью исходный html без обработок 
-	$pee = str_replace('<p>[html_r]</p>', '[html_r]', $pee);
-	$pee = str_replace('<p>[/html_r]</p>', '[/html_r]', $pee);
-	$pee = preg_replace_callback('!\[html_r\](.*?)\[\/html_r\]!is', 'mso_clean_html_r_do', $pee );
-	
-	# если html в [html] код [/html]
-	$pee = str_replace('<p>[html]</p>', '[html]', $pee);
-	$pee = str_replace('<p>[/html]</p>', '[/html]', $pee);
-	$pee = preg_replace_callback('!\[html\](.*?)\[\/html\]!is', 'mso_clean_html_do', $pee );
-
-	# преформатированный текст
-	$pee = preg_replace_callback('!(<pre.*?>)(.*?)(</pre>)!is', 'mso_clean_pre_do', $pee );
-	
-	$pee = str_replace('<br />', '<br>', $pee);
-	$pee = str_replace('<br/>', '<br>', $pee);
-	
-	$pee = str_replace("\n\t", "\n", $pee); 
-	
-	# ставим абзацы
-	$pee = preg_replace('!(.*)\n!', "\n<p>$1</p>", $pee);
-	
-	# исправим абзацы ошибочные
-	$pee = str_replace("<p></p>", "", $pee); 
-	$pee = str_replace("<p> </p>", "", $pee); 
-	$pee = str_replace("<p><p>", "<p>", $pee); 
-	$pee = str_replace("</p></p>", "</p>", $pee); 
-	$pee = str_replace("</script></p>", "</script>", $pee); 
-	$pee = str_replace("<p>	<div", "<div", $pee); 
-	$pee = preg_replace('!<p>(\s)+<!', "<p><", $pee); # <p>   <li
-	
-	# блочные тэги
-	$allblocks = '(?:table|thead|tfoot|caption|colgroup|center|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|code|select|form|map|area|blockquote|address|math|style|input|embed|h1|h2|h3|h4|h5|h6|hr|p|hgroup|section|header|footer|article|aside|nav|main)';
-	
-	# здесь не нужно ставить <p> и </p>
-	$pee = preg_replace('!<p>(<' . $allblocks . '[^>]*>)</p>!', "\n$1", $pee); # <p><tag></p>
-	$pee = preg_replace('!<p>(<' . $allblocks . '[^>]*>)!', "\n$1", $pee); # <p><tag> 
-	$pee = preg_replace('!<p>(</' . $allblocks . '[^>]*>)!', "\n$1", $pee); # <p></tag> 
-	$pee = preg_replace('!(<' . $allblocks . '[^>]*>)</p>!', "\n$1", $pee); # <tag></p>
-	$pee = preg_replace('!(</' . $allblocks . '>)</p>!', "$1", $pee); # </tag></p>
-	$pee = preg_replace('!(</' . $allblocks . '>) </p>!', "$1", $pee); # </tag></p>
-	
-	$pee = preg_replace('!<p>&nbsp;&nbsp;(<' . $allblocks . '[^>]*>)!', "\n$1", $pee); # <p>&nbsp;&nbsp;<tag> 
-	$pee = preg_replace('!<p>&nbsp;(<' . $allblocks . '[^>]*>)!', "\n$1", $pee); # <p>&nbsp;<tag> 
-	
-	# специфичные ошибки
-	$pee = str_replace("<blockquote>\n<p>", "<blockquote>", $pee); 
-	$pee = preg_replace('!<li>(.*)</p>\n!', "<li>$1</li>\n", $pee); # <li>...</p>
-	$pee = str_replace("</li>\n\n<li>", "</li>\n<li>", $pee);
-	$pee = str_replace("<p>	<li", "<li", $pee);
-	$pee = str_replace("<p></a></p>", "</a>", $pee);
-	
-	$pee = preg_replace('!<p><a id="(.*)"></a></p>\n!', "<a id=\"$1\"></a>\n", $pee);
-	$pee = preg_replace('!<p><a class="(.*)"></p>\n!', "<a class=\"$1\">\n", $pee);
-	
-	# еще раз подчистка
-	$pee = preg_replace('!<p><br(.*)></p>!', "<br$1>", $pee);
-	$pee = preg_replace('!<p><br></p>!', "<br>", $pee);
-	$pee = str_replace("--></p>", "-->", $pee);
-	
-	$pee = str_replace("\n\n\n", "\n", $pee); 
-	$pee = str_replace("\n\n", "\n", $pee); 
-
-	# завершим [html]
-	$pee = str_replace('<p>[html_base64]', '[html_base64]', $pee);
-	$pee = str_replace('[/html_base64]</p>', '[/html_base64]', $pee);
-	$pee = str_replace('[/html_base64] </p>', '[/html_base64]', $pee);
-	
-	$pee = preg_replace_callback('!\[html_base64\](.*?)\[\/html_base64\]!is', 'mso_clean_html_posle', $pee );
-	
-	# [br]
-	$pee = str_replace('[br]', '<br style="clear:both">', $pee);
-	$pee = str_replace('[br none]', '<br>', $pee);
-	$pee = str_replace('[br left]', '<br style="clear:left">', $pee);
-	$pee = str_replace('[br right]', '<br style="clear:right">', $pee);
-	
-	$pee = str_replace('<p><br></p>', '<br>', $pee);
-	$pee = preg_replace('!<p><br(.*)></p>!', "<br$1>", $pee);
-
-	# принудительный пробел
-	$pee = str_replace('[nbsp]', '&nbsp;', $pee);
-	
-	# спецзамены
-	$pee = str_replace('[BASEURL]', BASE_URL , $pee); // адрес сайта
-	$pee = str_replace('[BASE_URL]', BASE_URL , $pee); // адрес сайта
-	
-	// pr($pee,0); 
-	
-	return trim($pee);
-}
-
-/**
-*  предподготовка html в тексте между [html] ... [/html]
-*  конвертируем все символы в реальный html
-*  после этого кодируем его в одну строчку base64 [html_base64]
-*  
-*  @param $matches 
-*  
-*  @return string
-*/
-function mso_clean_html_do($matches)
-{
-	$arr1 = array('&amp;', '&lt;', '&gt;', '<br />', '<br>', '&nbsp;');
-	$arr2 = array('&',     '<',    '>',    "\n",     "\n",   ' ');
-	
-	$m = trim( str_replace($arr1, $arr2, $matches[1]) );
-	$m = '[html_base64]' . base64_encode($m) . '[/html_base64]';
-
-	return $m;
-}
-
-/**
-*  аналогично mso_clean_html_do, только без замен — [html_r] ... [/html_r]
-*  
-*  @param $matches 
-*  
-*  @return string
-*/
-function mso_clean_html_r_do($matches)
-{
-	return '[html_base64]' . base64_encode($matches[1]) . '[/html_base64]';
 }
 
 /**
@@ -1230,8 +810,6 @@ function mso_autoremove($pee)
 function mso_remove_protocol($text)
 {
 	# защищенный текст
-	$text = preg_replace_callback('!\[html_r\](.*?)\[\/html_r\]!is', 'mso_clean_html_r_do', $text);
-	$text = preg_replace_callback('!\[html\](.*?)\[\/html\]!is', 'mso_clean_html_do', $text);
 	$text = preg_replace_callback('!(<pre.*?>)(.*?)(</pre>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<code.*?>)(.*?)(</code>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<script.*?>)(.*?)(</script>)!is', 'mso_clean_html_script', $text);
@@ -1254,8 +832,6 @@ function mso_remove_protocol($text)
 function mso_compress_text($text)
 {
 	# защищенный текст
-	$text = preg_replace_callback('!\[html_r\](.*?)\[\/html_r\]!is', 'mso_clean_html_r_do', $text);
-	$text = preg_replace_callback('!\[html\](.*?)\[\/html\]!is', 'mso_clean_html_do', $text);
 	$text = preg_replace_callback('!(<pre.*?>)(.*?)(</pre>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<code.*?>)(.*?)(</code>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<script.*?>)(.*?)(</script>)!is', 'mso_clean_html_script', $text);
@@ -1514,11 +1090,6 @@ function mso_head()
 	
 	if ($VAR['nocss'] === false)
 	{
-		// какой-то ещё свой вариант для less-компиляции
-		if ($fn = mso_fe(BASE_DIR . $VAR['nd_less'] . '/less.php')) require($fn);
-		
-		echo mso_lessc(BASE_DIR . $VAR['nd_less'] . '/style.less', BASE_DIR . $VAR['nd_css'] . '/style.css', $baseurl . $VAR['nd_css'] . '/style.css', true, true, true);
-		
 		// autoload css-файлов из BASE_DIR
 		echo mso_autoload($VAR['nd_css'], true, false, '/'); 
 	}
@@ -1533,12 +1104,6 @@ function mso_head()
 	
 	if($VAR['autoload_css_page'] === true) // разрешена автозагрузка из текущей page
 	{
-		// какой-то ещё свой вариант для less-компиляции
-		if ($fn = mso_fe(CURRENT_PAGE_DIR . 'css-less/less.php')) require($fn);
-		
-		// autoload из каталога page css и css-less с компиляцией
-		echo mso_lessc(CURRENT_PAGE_DIR . 'css-less/style.less', CURRENT_PAGE_DIR . 'css/style.css', $current_page_url . 'css/style.css', true, true, true);
-		
 		echo mso_autoload('css', false, true, '/');
 	}
 	

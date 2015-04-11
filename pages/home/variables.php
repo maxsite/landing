@@ -14,7 +14,6 @@ $VAR['html_attr'] = 'lang="ru"'; // атрибуты корневого <HTML>
 
 ### прочие переменные (указано значение по-умолчанию)
 
-#	$VAR['autotag'] = false; // авторасстановка тегов
 #	$VAR['bbcode'] = false; // разрешить выполнять BBcode
 #	$VAR['markdown'] = false; // markdown
 #	$VAR['textile'] = false; // textile
@@ -38,7 +37,6 @@ $VAR['html_attr'] = 'lang="ru"'; // атрибуты корневого <HTML>
 #	$VAR['autoload_js_page'] = true; // загружать стили из текущей page /js/autoload/
 #	
 #	$VAR['no_output_only_file'] = false; // не выводить в браузер, а подключить только файл
-#	$VAR['less_out_in_file'] = false; // 'css-less/out.less' - исходный less-код перед компиляцией
 #	$VAR['generate_static_page'] = false; // BASE_DIR . 'cache/my_page.html' - создать статичную страницу
 #	$VAR['generate_static_page_base_url'] = '../'; // путь вместо BASE_URL
 #	
