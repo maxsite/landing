@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 26.0 9/04/2015
+	ver. 26.1 21/04/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -85,6 +85,9 @@ define("BASEURL", $base_url);
 function init()
 {
 	global $VAR, $MSO;
+	
+	// можно проверить наличие файла .htaccess
+	if (!file_exists(BASEPATH . '.htaccess')) mso_create_htaccess();
 	
 	define("BASE_DIR", BASEPATH); // аналог BASEPATH для унификации
 	define("BASE_URL", BASEURL); // аналог BASEURL для унификации
@@ -1872,5 +1875,23 @@ function mso_directory_map($source_dir, $directory_depth = 0, $hidden = FALSE)
 
 	return FALSE;
 }
+
+/**
+ * Автоматическое создание .htaccess
+ */
+function mso_create_htaccess()
+{
+	if (isset($_SERVER['REQUEST_URI']))
+		$path = $_SERVER['REQUEST_URI'];
+	else
+		$path = '/';
+	
+	$htaccess = file_get_contents(ENGINE_DIR . 'htaccess-distr.txt');
+	$htaccess = str_replace('RewriteBase /', 'RewriteBase ' . $path, $htaccess);
+	$htaccess = str_replace('RewriteRule ^(.*)$ /', 'RewriteRule ^(.*)$ ' . $path, $htaccess);
+	
+	file_put_contents(BASEPATH . '.htaccess', $htaccess);
+}
+
 
 #end of file
