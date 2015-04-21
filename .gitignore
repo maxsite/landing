@@ -28,3 +28,6 @@
 # игнорируеми images кроме favicon.png
 /images/**
 !/images/favicon.png
+
+# игнорируеми set
+.htaccess
