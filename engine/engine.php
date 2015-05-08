@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 26.2 3/05/2015
+	ver. 26.3 8/05/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
