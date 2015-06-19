@@ -2,7 +2,7 @@
 /*
 	Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
-	ver. 26.4 9/05/2015
+	ver. 26.6 18/06/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -172,6 +172,14 @@ function init()
 		define('CURRENT_PAGE', $page);
 	}
 	
+	// выставляем CURRENT_PAGE_ROOT — корневую page: category/news/edit -> category
+	$page_root = CURRENT_PAGE;
+
+	if (($pos = strpos(CURRENT_PAGE, '/')) !== false) // в имени есть /
+		$page_root = substr(CURRENT_PAGE, 0, $pos);
+	
+	define('CURRENT_PAGE_ROOT', $page_root);
+		
 	define('CURRENT_PAGE_DIR', PAGES_DIR . CURRENT_PAGE . '/'); // путь на сервере к текущей page
 	define('CURRENT_PAGE_URL', PAGES_URL . CURRENT_PAGE . '/'); // http-адрес к текущей page
 	
@@ -367,14 +375,16 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 *  
 *  в $need_file можно указать обязательный файл в подкаталоге
 *  если $need_file = true то обязательный php-файл в подкаталоге должен совпадать с именем подкаталога например для /menu/ это menu.php
+*  Если $minus = true, то исключаем каталоги начинающиеся на - или _
 *  
 *  @param $path 
 *  @param $exclude 
 *  @param $need_file 
+*  @param $minus
 *  
 *  @return array
 */
-function mso_get_dirs($path, $exclude = array(), $need_file = false)
+function mso_get_dirs($path, $exclude = array(), $need_file = false, $minus = true)
 {
 
 	if ($all_dirs = mso_directory_map($path, true))
@@ -385,8 +395,11 @@ function mso_get_dirs($path, $exclude = array(), $need_file = false)
 			// нас интересуют только каталоги
 			if (is_dir($path . $d) and !in_array($d, $exclude))
 			{
-				if (strpos($d, '_') === 0) continue; // исключаем файлы, начинающиеся с _
-				if (strpos($d, '-') === 0) continue; // исключаем файлы, начинающиеся с -
+				if ($minus)
+				{
+					if (strpos($d, '_') === 0) continue; // исключаем файлы, начинающиеся с _
+					if (strpos($d, '-') === 0) continue; // исключаем файлы, начинающиеся с -
+				}
 				
 				// если указан обязательный файл, то проверяем его существование
 				if($need_file === true and !file_exists($path . $d . '/' . $d . '.php')) continue;
@@ -669,7 +682,6 @@ function mso_output_text()
 		}
 		
 		echo $out;
-		
 	}
 }
 
@@ -713,9 +725,10 @@ function mso_word_processing($out, $var = false)
 		}
 	}
 	
+	
 	if ($var['autoremove']) $out = mso_autoremove($out);
 	
-	// if ($var['autotag']) $out = mso_autotag($out);
+	//  if ($var['autotag']) $out = mso_autotag($out); // -----
 	
 	if ($var['autopre']) $out = mso_autopre($out);
 
@@ -845,6 +858,7 @@ function mso_remove_protocol($text)
 	$text = preg_replace_callback('!(<pre.*?>)(.*?)(</pre>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<code.*?>)(.*?)(</code>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<script.*?>)(.*?)(</script>)!is', 'mso_clean_html_script', $text);
+	$text = preg_replace_callback('!(<textarea.*?>)(.*?)(</textarea>)!is', 'mso_clean_html_script', $text);
 	
 	$text = str_replace('https://', '//', $text);
 	$text = str_replace('http://', '//', $text);
@@ -867,6 +881,7 @@ function mso_compress_text($text)
 	$text = preg_replace_callback('!(<pre.*?>)(.*?)(</pre>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<code.*?>)(.*?)(</code>)!is', 'mso_clean_pre_do', $text);
 	$text = preg_replace_callback('!(<script.*?>)(.*?)(</script>)!is', 'mso_clean_html_script', $text);
+	$text = preg_replace_callback('!(<textarea.*?>)(.*?)(</textarea>)!is', 'mso_clean_html_script', $text);
 	
 	$text = str_replace(array("\r\n", "\r"), "\n", $text);
 	$text = str_replace("\t", ' ', $text);
@@ -1046,7 +1061,12 @@ function mso_url_request($keys_only = true, $key_present = false, $key_present_r
 			if ($key_present !== false)
 			{
 				if ($key_present_return_array)
-					return $uri_get_array[$key_present];
+				{
+					if (isset($uri_get_array[$key_present]))
+						return $uri_get_array[$key_present];
+					else
+						return false;
+				}
 				else
 					return isset($uri_get_array[$key_present]);
 			}
