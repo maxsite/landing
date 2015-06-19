@@ -71,6 +71,9 @@ function autotag_simple($text)
 	
 	$text = "\n" . $text . "\n";
 	
+	// <!-- nosimple --> текст без обработки <!-- \nosimple -->
+	$text = preg_replace_callback('!(<\!-- nosimple -->)(.*?)(<\!-- \/nosimple -->)!is', 'autotag_simple_no', $text);
+	
 	$text = preg_replace('!\n\s*_\s(.*?)\n!', "\n\n<p>$1</p>\n", $text);
 	$text = preg_replace('!\n\s*_\s(.*?)\n!', "\n\n<p>$1</p>\n", $text);
 	
@@ -134,5 +137,12 @@ function autotag_simple($text)
 	
 	return trim($text);
 }
+
+
+function autotag_simple_no($matches)
+{
+	return '[html_base64]' . base64_encode($matches[2]) . '[/html_base64]';
+}
+
 
 # end of file
