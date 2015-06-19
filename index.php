@@ -13,7 +13,8 @@
 	
 	if ($fn = mso_fe(BASEPATH . 'environment/config.php')) require($fn);
 	init();
-	if ($fn = mso_fe(BASEPATH . 'environment/my.php')) require($fn);
+	if ($fn = mso_fe(BASEPATH . 'environment/my.php')) require($fn); // <- deprecated
+	if ($fn = mso_fe(BASEPATH . 'environment/variables.php')) require($fn);
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'variables.php')) require($fn);
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'functions.php')) require($fn);
 	
