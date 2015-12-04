@@ -1,5 +1,6 @@
-Landing Page Framework (LPF)
-(c) MAX — http://lpf.maxsite.com.ua/
+(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
+(c) MAX — http://maxsite.org/
+
 Made in Ukraine
 
 License:  Putin huilo! | Путин хуйло!

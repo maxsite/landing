@@ -1,31 +1,18 @@
 <?php
-#	Landing Page Framework (LPF) | (c) MAX — http://lpf.maxsite.com.ua/
-#	Putin Huilo! Crimea this Ukraine!
+/*	
+	(с) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
+	(c) MAX — http://maxsite.org/
+	Putin Huilo! Crimea this Ukraine!
+*/
 
-	define('BASEPATH', dirname(realpath(__FILE__)) . '/');
-	
-	if (file_exists(BASEPATH . 'environment/environment.php')) 
-		require(BASEPATH . 'environment/environment.php');
-	else 
-		define('ENGINE_DIR',  BASEPATH . 'engine/');
-	
-	require_once(ENGINE_DIR . 'engine.php');
-	
-	if ($fn = mso_fe(BASEPATH . 'environment/config.php')) require($fn);
-	init();
-	if ($fn = mso_fe(BASEPATH . 'environment/my.php')) require($fn); // <- deprecated
-	if ($fn = mso_fe(BASEPATH . 'environment/variables.php')) require($fn);
-	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'variables.php')) require($fn);
-	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'functions.php')) require($fn);
-	
-	if ($VAR['no_output_only_file'] and $fn = mso_fe(CURRENT_PAGE_DIR . $VAR['no_output_only_file'])) 
-	{ 
-		require($fn);
-		exit;
-	}
-	
-	if ($VAR['generate_static_page']) ob_start();
-	if ($VAR['before_file'] and $fn = mso_fe($VAR['before_file'])) require($fn);
+define('BASEPATH', dirname(realpath(__FILE__)) . '/');
+
+if (file_exists(BASEPATH . 'lpf-content/config/environment.php')) 
+	require(BASEPATH . 'lpf-content/config/environment.php');
+else 
+	define('ENGINE_DIR',  BASEPATH . 'lpf-core/engine/');
+
+require_once(ENGINE_DIR . 'start.php');
 
 ?><!DOCTYPE HTML>
 <html<?= ($VAR['html_attr']) ? ' ' . $VAR['html_attr'] : '' ?>><head>
