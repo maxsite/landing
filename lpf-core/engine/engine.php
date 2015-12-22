@@ -2,7 +2,7 @@
 /*
 	(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
 	(c) MAX — http://maxsite.org/
-	ver. 30.0 4/12/2015
+	ver. 30.1 6/12/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -136,6 +136,8 @@ function init()
 	$page = str_replace('.', '_', $page); 
 	$page = str_replace('~', '-', $page);
 	$page = str_replace('\\', '-', $page);
+	$page .= ' ';
+	$page = trim(str_replace('/ ', '', $page));
 	
 	// обязательный файл index.php — задан в $MSO['_page_file']
 	if ( file_exists(PAGES_DIR . $page . DIRECTORY_SEPARATOR . $MSO['_page_file']) )

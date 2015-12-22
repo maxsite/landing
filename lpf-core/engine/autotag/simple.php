@@ -25,6 +25,10 @@
 		текст
 	/div
 	
+	section
+		текст
+	/section
+	
 	ul
 		* привет
 		* привет
@@ -65,7 +69,7 @@
 	_(класс)(стили)
 	h1(класс)(стили)
 	div(класс)(стили)
-	
+	section(класс)(стили)
 */
 
 function autotag_simple($text)
@@ -109,9 +113,13 @@ function autotag_simple($text)
 	
 	$text = preg_replace('!\n\s*div\n!', "\n<div>\n", $text);
 	$text = preg_replace('!\n\s*\/div\n!', "\n</div>\n", $text);
-	
 	$text = preg_replace('!\n\s*div\((.*?)\)\((.*?)\)\n!', "\n<div class=\"$1\" style=\"$2\">\n", $text);
 	$text = preg_replace('!\n\s*div\((.*?)\)\n!', "\n<div class=\"$1\">\n", $text);	
+	
+	$text = preg_replace('!\n\s*section\n!', "\n<section>\n", $text);
+	$text = preg_replace('!\n\s*\/section\n!', "\n</section>\n", $text);
+	$text = preg_replace('!\n\s*section\((.*?)\)\((.*?)\)\n!', "\n<section class=\"$1\" style=\"$2\">\n", $text);
+	$text = preg_replace('!\n\s*section\((.*?)\)\n!', "\n<section class=\"$1\">\n", $text);	
 	
 	$text = preg_replace('!\n\s*ul\n!', "\n<ul>\n", $text);
 	$text = preg_replace('!\n\s*\/ul\n!', "\n</ul>\n", $text);

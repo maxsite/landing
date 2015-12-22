@@ -10,6 +10,11 @@ if ($fn = mso_fe(BASEPATH . 'lpf-content/config/config.php')) require($fn);
 
 init();
 
+if ($fn = mso_fe(CURRENT_PAGE_DIR . '_server.php'))
+{
+	if ((include $fn) == 'STOP') exit;
+}
+
 if ($fn = mso_fe(BASEPATH . 'lpf-content/config/variables.php')) require($fn);
 
 if ($fn = mso_fe(CURRENT_PAGE_DIR . 'variables.php')) 
@@ -19,16 +24,10 @@ else
 
 if ($fn = mso_fe(CURRENT_PAGE_DIR . 'functions.php')) require($fn);
 
-if (isset($_POST) and $_POST)
+if ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) or (isset($_POST) and $_POST) )
 {
-	if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) and $fn = mso_fe(CURRENT_PAGE_DIR . '_ajax.php'))
-	{
-		require($fn);
-		exit;
-	}
-
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . '_post2.php')) require($fn);
-
+	
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . '_post.php'))
 	{
 		require($fn);
