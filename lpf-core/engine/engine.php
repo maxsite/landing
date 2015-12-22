@@ -2,7 +2,7 @@
 /*
 	(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
 	(c) MAX — http://maxsite.org/
-	ver. 30.1 6/12/2015
+	ver. 30.2 22/12/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -1655,10 +1655,12 @@ function mso_create_htaccess()
 	file_put_contents(BASEPATH . '.htaccess', $htaccess);
 }
 
-# HTML-шаблонизатор
-# вход - текст : выполняет замены, отдает php-код
-# если $replace = true то в коде удаляются табуляторы и двойные \n
-# полученный код выполнять через eval();
+/**
+ * HTML-шаблонизатор
+ * вход - текст : выполняет замены, отдает php-код
+ * если $replace = true то в коде удаляются табуляторы и двойные \n
+ * полученный код выполнять через eval();
+ */
 function mso_tmpl_prepare($template, $replace = false)
 {
 	$template = '?>' . str_replace(array('{{', '}}', '{%', '%}'), array('<?=', '?>', '<?php', '?>'), $template);
@@ -1711,6 +1713,39 @@ function mso_get_yaml($fn)
 			
 		if (isset($conf['META_LINK']) and is_array($conf['META_LINK']) ) $META_LINK = array_merge($META_LINK, $conf['META_LINK']);
 	}
+}
+
+/**
+ *  функция проверяет существование POST, а также обязательных полей
+ *  которые передаются в параметрах
+ *  если полей нет, то возвращается false
+ *  если поля есть, то возвращается $_POST
+ *  if ($post = mso_check_post('content', 'file_path')) { ... }
+ */
+function mso_check_post()
+{
+	if ($_POST)
+	{
+		$numargs = func_num_args(); // кол-во аргументов переданных в функцию
+
+		if ($numargs === 0) return false; // нет аргументов, выходим
+
+		$args = func_get_args();
+		
+		$check = true;
+		
+		foreach ($args as $key=>$field)
+		{
+			if (!isset($_POST[$field]))
+			{  // нет значения - выходим
+				$check = false;
+				break;
+			}
+		}
+		if (!$check) return false;
+			else return $_POST;
+	}
+	else return false;
 }
 
 #end of file

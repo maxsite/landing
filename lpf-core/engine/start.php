@@ -26,7 +26,10 @@ if ($fn = mso_fe(CURRENT_PAGE_DIR . 'functions.php')) require($fn);
 
 if ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) or (isset($_POST) and $_POST) )
 {
-	if ($fn = mso_fe(CURRENT_PAGE_DIR . '_post2.php')) require($fn);
+	if ($fn = mso_fe(CURRENT_PAGE_DIR . '_post2.php')) 
+	{
+		if ((include $fn) == 'STOP') exit;
+	}
 	
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . '_post.php'))
 	{
