@@ -5,7 +5,9 @@
 
 Авторизация через php-сессии
 
-1. В каталоге страницы auth/auth-options.php
+Всё в каталоге страницы. 
+
+1. 	Файл auth/auth-options.php содержит опции
 
 	$OPTIONS = array(
 		'username' => 'admin', // логин
@@ -13,22 +15,30 @@
 		'text_error' => 'Ошибочные данные', // текст при ошибке
 	);
 
-2. В text.php в начале
+2. Файл functions.php код:
+	
+	require_once(ENGINE_DIR . 'additions/auth-session.php');
+	$auth_options = mso_load_options(PAGES_DIR . CURRENT_PAGE_ROOT . '/auth/auth-options.php');
+	mso_auth_init($auth_options); // инициализация авторизации
 
-		require_once(ENGINE_DIR . 'additions/auth-session.php');
+3. В index.php в начале (в параметре ссылка на логин)
+
+	if (!mso_check_auth('<p><a href="?login" class="button">Login</a></p>')) return;
+	
+	... текст доступный только после авторизации ...
 		
-		if (!mso_auth('<a href="?login">ВХОД</a>')) return;
-
-		... текст доступный только после авторизации ...
+	Ссылка на <a href="?logout">ВЫХОД</a>
 		
-		Ссылка на <a href="?logout">ВЫХОД</a>
 
-3. В файле auth/auth-login-form.php можно разместить свою форму логина.
+4. В файле auth/auth-login-form.php можно разместить свою форму логина.
 
 */
 
-function mso_auth($text_login = '<a href="?login">Вход</a>', $OPTIONS = true)
+// инициализация
+function mso_auth_init($OPTIONS = true)
 {
+	global $MSO;
+	
 	// дефолтные опции
 	$def_options = array(
 		'username' => '', // логин
@@ -53,12 +63,12 @@ function mso_auth($text_login = '<a href="?login">Вход</a>', $OPTIONS = true
 	{
 		die('Not specified username and password to login (mso_auth)');
 	}
-		
+	
+	$MSO['auth_login'] = ''; // результат функиции (что делать дальше)
+	$MSO['auth_login_options'] = $OPTIONS; // все опции
+	
 	// все редиректы на эту же страницу без ?-get
 	$url_redirect = mso_current_url(false, true, true);
-	
-	// признак отображения формы
-	$show_form = false;
 	
 	// вход
 	if (mso_url_request(false, $OPTIONS['login_link']))
@@ -86,19 +96,16 @@ function mso_auth($text_login = '<a href="?login">Вход</a>', $OPTIONS = true
 			else
 			{
 				// не равно
-				echo $OPTIONS['text_error']; // ошибочные данные
-				
-				$show_form = true;
+				$MSO['auth_login'] = 'error_login_show_form';
 			}
 		}
 		else
 		{
 			// нет post 
-			
 			// если уже есть залогиненость, то редиректим
 			if (mso_is_auth($OPTIONS)) header('Location:' . $url_redirect);
 			
-			$show_form = true; // выводим форму
+			$MSO['auth_login'] = 'show_form';
 		}
 	}
 	elseif (mso_url_request(false, $OPTIONS['logout_link'])) // ссылка на выход
@@ -110,18 +117,10 @@ function mso_auth($text_login = '<a href="?login">Вход</a>', $OPTIONS = true
 		header('Location:' . $url_redirect);
 	}
 	
-	if ($show_form) 
-	{
-		if (file_exists($OPTIONS['login_form'])) 
-			require($OPTIONS['login_form']);
-		else
-			mso_auth_form();
-	}
-	
 	// если нет авторизации, то выводим сслыку на ВХОД
 	if (strpos($_SERVER['REQUEST_URI'], '?') === FALSE) 
 	{
-		if (!mso_is_auth($OPTIONS)) echo $text_login;
+		if (!mso_is_auth($OPTIONS)) $MSO['auth_login'] = 'text_login';
 	}
 	
 	if (mso_is_auth($OPTIONS))
@@ -129,6 +128,46 @@ function mso_auth($text_login = '<a href="?login">Вход</a>', $OPTIONS = true
 	else
 		return false;
 }
+
+
+# обработка результата mso_auth_init()
+function mso_check_auth($text_login = '<a href="?login">Вход</a>') 
+{
+	global $MSO;
+	
+	$OPTIONS = $MSO['auth_login_options'];
+	
+	if (mso_is_auth($OPTIONS)) return true;
+	
+	if ($MSO['auth_login'] == 'text_login')
+	{
+		echo $text_login;
+		return false;
+	}
+	elseif ($MSO['auth_login'] == 'show_form')
+	{
+		if (file_exists($OPTIONS['login_form'])) 
+			require($OPTIONS['login_form']);
+		else
+			mso_auth_form();
+		
+		return false;
+	}
+	elseif ($MSO['auth_login'] == 'error_login_show_form')
+	{
+		echo $OPTIONS['text_error'];
+		
+		if (file_exists($OPTIONS['login_form'])) 
+			require($OPTIONS['login_form']);
+		else
+			mso_auth_form();
+		
+		return false;
+	}
+	
+	return false;
+}
+
 
 # проверка залогированности
 # возвращает true — если логин и пароль верный
@@ -139,7 +178,7 @@ function mso_is_auth($OPTIONS = true)
 	{
 		$OPTIONS = mso_load_options(CURRENT_PAGE_DIR . 'auth/auth-options.php');
 	}
-
+	
 	if (!isset($_SESSION)) session_start();
 	
 	if (

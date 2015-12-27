@@ -3,10 +3,12 @@
 	(с) Landing Page Framework (LPF)
 	(c) MAX — http://lpf.maxsite.com.ua/
 	
+	См. http://lpf.maxsite.com.ua/autotag-simple
+	
 	Простой autotag
 
 	Подключение в variables.php:
-		$VAR['autotag_my'] = 'simple';
+		$VAR['simple'] = true;
 
 	Возможности:
 

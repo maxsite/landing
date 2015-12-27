@@ -1,39 +1,41 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-if ($post = mso_check_post('content', 'file_path'))
+require_once(PAGES_DIR . CURRENT_PAGE_ROOT . '/functions.php');
+
+if ($post = mso_check_post('clear_cache'))
 {
-	require_once(ENGINE_DIR . 'additions/auth-session.php');
-	if (!mso_auth('')) return;
+	if (!_auth()) return 'STOP';
 	
-	$file = base64_decode($post['file_path']);
-	$file = str_replace('~', '-', $file);
-	$file = str_replace('\\', '-', $file);
-	$file = BASE_DIR . 'lpf-content/' . $file;
+	_clear_cache();
 	
-	if (file_exists($file))
-	{
-		file_put_contents($file, $post['content']);
-		echo '<span class="mar10-l t-green t130">✔</span> Saved';
-	}
-	else
-	{
-		echo '<span class="mar10-l t-red t130">✖</span> File not found';
-	}
+	echo '<span class="t-green">OK: cache cleared</span>';
 	
 	return 'STOP';
 }
-elseif ($post = mso_check_post('load', 'file'))
+
+if ($post = mso_check_post('delete_pages', 'page'))
 {
-	require_once(ENGINE_DIR . 'additions/auth-session.php');
-	if (!mso_auth('')) return;
-
-	$file = base64_decode($post['file']);
-	$file = str_replace('~', '-', $file);
-	$file = str_replace('\\', '-', $file);
-	$file = BASE_DIR . 'lpf-content/' . $file;
-
-	if (file_exists($file)) echo file_get_contents($file);
+	if (!_auth()) return 'STOP';
 	
+	if ($post['page'])
+	{
+		foreach($post['page'] as $page)
+		{
+			// нельзя удалять
+			if ($page == 'home' or $page == '404' or $page == 'lpf-admin') continue;
+			
+			$d = str_replace('\\', '/', PAGES_DIR . $page);
+			
+			if (is_dir($d)) 
+			{
+				_delete_files($d, true); // файлы и подкаталоги
+				rmdir($d); // основной каталог
+			}
+		}
+	}
+	
+	// редиректим сюда же
+	header('Location: ' . mso_current_url(false, true));
 	return 'STOP';
 }
 

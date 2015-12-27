@@ -1,82 +1,60 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-	require_once(ENGINE_DIR . 'additions/auth-session.php');
-
-	if (!mso_auth('<p class="t-center mar20"><a href="?login" class="button">Login</a></p>')) return;
+if (!mso_check_auth('<p class="t-center mar20"><a href="?login" class="button">Login</a></p>')) return;
 
 ?>
-<div class="mar20">
+<div class="layout-center-wrap"><div class="layout-wrap">
 
-<?php 
+<?= mso_snippet('menu') ?>
 
-$directory = BASE_DIR . 'lpf-content/';
-$directory = str_replace('\\', '/', $directory);
+</div></div>
 
-$r = new RecursiveDirectoryIterator($directory);
+<div class="layout-center-wrap"><div class="layout-wrap">
 
-$files = _getFiles($r, 0, $directory);
-$content_file = '';
-$file_path = '';
 
-$select = '<option value="" selected>-</option>';
+<div class="">
+	<span>Landing Page Framework <b>v.<?= LPF_VERSION ?></b></span>
+	<span id="clear_cache" class="mar30-l / bg-blue t-white pad5-tb pad10-rl / cursor-pointer / hover-bg-blue600">Clear cache</span><span class="mar10-l" id="result_clear_cache"></span>
+	
+</div>
 
-foreach ($files as $file)
+
+<h3>All pages</h3>
+
+<form action="" method="POST">
+<ul class="out-list mar20-b">
+
+<?php
+$all_dirs = mso_directory_map(PAGES_DIR, true);
+
+$i = 1;
+$show_delete_button = 'b-hide';
+
+foreach($all_dirs as $page)
 {
-	if (strpos($file, 'optgroup') === false)
-	{
-		$select .= '<option value="' . base64_encode($file) . '">' . $file . '</option>';
-	}
+	$class_li = (($i++ % 2) == 1) ? 'bg-gray100' : '';
+	
+	$url = ($page == 'home') ? '' : $page;
+	
+	if ($page == 'home' or $page == '404' or $page == 'lpf-admin' or $page == CURRENT_PAGE)
+		$disabled = ' disabled';
 	else
-		$select .= $file;
+		$disabled = '';
+	
+	if (!$disabled and $show_delete_button) $show_delete_button = '';
+		
+	echo '<li class="' . $class_li . ' pad10"><label><input type="checkbox" name="page[]" value="' . $page . '"' . $disabled . '> <i class="mar10-l i-newspaper-o"></i> ' . $page . '</label> <a target="_blank" href="' . BASE_URL . $url . '" class="t-gray">link</a>';
 }
 
 ?>
+</ul>
+<button class="<?= $show_delete_button ?>" type="submit" name="delete_pages" onClick="return(confirm('Delete pages?'))">Delete select pages</button></form>
+</div></div>
 
-<p class="mar30-t">Select file <select id="select_file" class="w-auto"><?= $select ?></select> <span id="success"></span></p>
-
-<?php
-
-echo '<form method="post" id="edit_form" action=""><textarea name="content" id="content" class="w100 h500px bg-gray50">' . $content_file . '</textarea><input type="hidden" id="file_path" name="file_path" value="' . $file_path . '"><p><button id="b-save" class="button" type="submit">✔ Save</button></p></form>';
-		
-$AJAX = CURRENT_URL;
-
-echo <<<EOF
 <script>
-jQuery(function($) {
-	$('#b-save').fadeOut(0);
-	$('#select_file').change(function(){
-		var f = $("#select_file :selected").val();
-		if (f)
-		{
-			$.post("{$AJAX}", {file:f, load: 1},  function(response) {
-				$('#file_path').val(f);
-				$('#content').val(response);
-				$('#success').html('<span class="mar10-l t-green t130">✔</span> File upload');
-				$('#success').show();
-				$('#success').fadeOut(2000);
-				$('#b-save').fadeOut(500);
-			});
-		}
-	})
-	$('#edit_form').submit(function(){
-		$.post("{$AJAX}", $("#edit_form").serialize(),  function(response) {
-			$('#success').html(response);
-			$('#success').show();
-			$('#success').fadeOut(5000);
-			$('#b-save').fadeOut(1000);
-		});
-		return false;
-	})
-	$('#content').keypress(function(){
-		$('#b-save').fadeIn(1000);
-	})
-});
+	var PHPVAR = {};
+	PHPVAR.current_url = "<?= CURRENT_URL ?>";
 </script>
 
-EOF;
-
-?>
-
-<p class="mar20-tb"><a href="?logout">Logout</a>  | <a href="<?= BASE_URL ?>">Home</a></p>
-
-</div>
+<?php /*  стрипт подключаем отдельно, чтобы использовать lazy-каталог как общий всех страниц */ ?>
+<?= mso_load_script(CURRENT_PAGE_URL . 'assets/js/clear_cache.js') ?>

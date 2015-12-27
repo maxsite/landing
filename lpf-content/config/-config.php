@@ -1,7 +1,9 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed'); 
+/* 
+	rename this file in config.php 
+*/
 
-// !!! нужно переименовать этот файл в config.php
+// main file «text.php» (for LPF < 30.0)
+$MSO['_page_file'] = 'text.php';
 
-
-// если основной файл text.php
-$MSO['_page_file'] = 'text.php'; 
+# end of file

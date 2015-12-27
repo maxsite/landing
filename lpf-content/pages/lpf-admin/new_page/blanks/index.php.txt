@@ -19,6 +19,5 @@ VAR:
 
 h1 Landing Page Framework
 
-_ <a href="http://lpf.maxsite.com.ua/">Homesite</a>
+_ <a href="http://lpf.maxsite.com.ua/">Landing Page Framework</a>
 
-_ <a href="<?= BASE_URL ?>lpf-admin">Admin panel</a> (Put you login/password to <b>pages/lpf-admin/auth/auth-options.php</b>)

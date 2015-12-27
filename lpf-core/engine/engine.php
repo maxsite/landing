@@ -2,7 +2,6 @@
 /*
 	(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
 	(c) MAX — http://maxsite.org/
-	ver. 30.2 22/12/2015
 	
 	Made in Ukraine | Зроблено в Україні
 	
@@ -20,6 +19,8 @@
 
 $_TIME_START = microtime(true); // для статистики
 
+define("LPF_VERSION", "31.0 27/12/2015"); // версия LPF
+
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
 
@@ -33,6 +34,7 @@ $VAR['autotag_my'] = false;
 $VAR['bbcode'] = false;
 $VAR['markdown'] = false;
 $VAR['textile'] = false;
+$VAR['simple'] = false;
 $VAR['autopre'] = false;
 $VAR['autoremove'] = false;
 $VAR['compress_text'] = false;
@@ -95,32 +97,6 @@ function init()
 	// http-путь к /pages/ на сервере
 	if (!defined('PAGES_URL')) define("PAGES_URL", BASE_URL . 'lpf-content/pages/'); 
 	
-	// путь к /set/ на сервере — если используется
-	if (!defined('SET_DIR')) define("SET_DIR", BASE_DIR . 'lpf-content/set' . DIRECTORY_SEPARATOR); 
-	
-	// http-путь к /set/ на сервере
-	if (!defined('SET_URL')) define("SET_URL", BASE_URL . 'lpf-content/set/');
-	
-	// путь к /assets/ на сервере — если используется
-	if (!defined('ASSETS_DIR')) define("ASSETS_DIR", BASE_DIR . 'assets' . DIRECTORY_SEPARATOR); 
-	
-	// http-путь к /assets/ на сервере
-	if (!defined('ASSETS_URL')) define("ASSETS_URL", BASE_URL . 'assets/');
-	
-	// путь к /components/ на сервере
-	if (!defined('COMPONENTS_DIR')) define("COMPONENTS_DIR", BASE_DIR . 'lpf-content/components' . DIRECTORY_SEPARATOR); 
-
-	// http-путь к /components/
-	if (!defined('COMPONENTS_URL')) define("COMPONENTS_URL", BASE_URL . 'lpf-content/components/'); 
-	
-	// каталог cache
-	if (!defined('CACHE_DIR')) define("CACHE_DIR", BASE_DIR . 'lpf-core/cache' . DIRECTORY_SEPARATOR); 
-	
-	// путь к /snippets/ на сервере
-	if (!defined('SNIPPETS_DIR')) define("SNIPPETS_DIR", BASE_DIR . 'lpf-content/snippets' . DIRECTORY_SEPARATOR); 
-
-	// http-путь к /snippets/
-	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'lpf-content/snippets/'); 
 	
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
 	if (!defined('PAGE_404')) define('PAGE_404', '404');
@@ -200,6 +176,34 @@ function init()
 	
 	// может есть init.php
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'init.php')) require($fn);
+	
+	// путь к /set/ на сервере — если используется
+	if (!defined('SET_DIR')) define("SET_DIR", BASE_DIR . 'lpf-content/set' . DIRECTORY_SEPARATOR); 
+	
+	// http-путь к /set/ на сервере
+	if (!defined('SET_URL')) define("SET_URL", BASE_URL . 'lpf-content/set/');
+	
+	// путь к /assets/ на сервере — если используется
+	if (!defined('ASSETS_DIR')) define("ASSETS_DIR", BASE_DIR . 'assets' . DIRECTORY_SEPARATOR); 
+	
+	// http-путь к /assets/ на сервере
+	if (!defined('ASSETS_URL')) define("ASSETS_URL", BASE_URL . 'assets/');
+	
+	// путь к /components/ на сервере
+	if (!defined('COMPONENTS_DIR')) define("COMPONENTS_DIR", BASE_DIR . 'lpf-content/components' . DIRECTORY_SEPARATOR); 
+
+	// http-путь к /components/
+	if (!defined('COMPONENTS_URL')) define("COMPONENTS_URL", BASE_URL . 'lpf-content/components/'); 
+	
+	// каталог cache
+	if (!defined('CACHE_DIR')) define("CACHE_DIR", BASE_DIR . 'lpf-core/cache' . DIRECTORY_SEPARATOR); 
+	
+	// путь к /snippets/ на сервере
+	if (!defined('SNIPPETS_DIR')) define("SNIPPETS_DIR", BASE_DIR . 'lpf-content/snippets' . DIRECTORY_SEPARATOR); 
+
+	// http-путь к /snippets/
+	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'lpf-content/snippets/'); 
+	
 }
 
 /**
@@ -332,7 +336,7 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 
 	$files = mso_directory_map($path, true); // получаем все файлы в каталоге
 	if (!$files) return array();// если файлов нет, то выходим
-
+	
 	$all_files = array(); // результирующий массив с нашими файлами
 	
 	// функция mso_directory_map возвращает не только файлы, но и подкаталоги
@@ -341,7 +345,7 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 	{
 		if (@is_dir($path . $file)) continue; // это каталог
 		
-		$ext = substr(strrchr($file, '.'), 1);// расширение файла
+		$ext = mso_file_ext($file); // расширение файла
 		
 		// расширение подходит?
 		if (in_array($ext, $exts))
@@ -380,7 +384,7 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 function mso_get_dirs($path, $exclude = array(), $need_file = false, $minus = true)
 {
 
-	if ($all_dirs = mso_directory_map($path, true))
+	if ($all_dirs = mso_directory_map($path, 1))
 	{
 		$dirs = array();
 		foreach ($all_dirs as $d)
@@ -534,6 +538,7 @@ function mso_stat_out()
 	if ($MSO['_use_cache']) $out .= ' | Cache';
 	if ($VAR['bbcode']) $out .= ' | BBCode';
 	if ($VAR['markdown']) $out .= ' | Markdown';
+	if ($VAR['simple']) $out .= ' | Simple';
 	if ($VAR['textile']) $out .= ' | Textile';
 	if ($VAR['nocss']) $out .= ' | NoCSS';
 	if ($VAR['nojs']) $out .= ' | NoJS';
@@ -690,12 +695,12 @@ function mso_word_processing($out, $var = false)
 	
 	if ($a = $var['autotag_my']) 
 	{
-		// например $VAR['autotag_my'] = 'simple';
-		// файл: pages/autotag/simple.php
-		// функция должна называться как autotag_ПАРСЕР: autotag_simple($text);
+		// например $VAR['autotag_my'] = 'maxsite';
+		// файл: pages/autotag/maxsite.php
+		// функция должна называться как autotag_ПАРСЕР: autotag_maxsite($text);
 		
-		// или в ENGINE_DIR/autotag/simple.php
-		// функция: autotag_simple();
+		// или в ENGINE_DIR/autotag/maxsite.php
+		// функция: autotag_maxsite();
 		
 		$fu = 'autotag_' . $a;
 		
@@ -726,15 +731,21 @@ function mso_word_processing($out, $var = false)
 		$out = bbcode_custom($out);
 	}
 	
-	if ($var['markdown'] and mso_fe(ENGINE_DIR . 'markdown/markdown.php')) 
+	if ($var['simple'] and mso_fe(ENGINE_DIR . 'autotag/simple.php')) 
 	{
-		require_once(ENGINE_DIR . 'markdown/markdown.php'); // markdown-код
+		require_once(ENGINE_DIR . 'autotag/simple.php'); // markdown-код
+		$out = autotag_simple($out);
+	}
+	
+	if ($var['markdown'] and mso_fe(ENGINE_DIR . 'autotag/markdown.php')) 
+	{
+		require_once(ENGINE_DIR . 'autotag/markdown.php'); // markdown-код
 		$out = Markdown($out);
 	}
 	
-	if ($var['textile'] and mso_fe(ENGINE_DIR . 'textile/textile.php')) 
+	if ($var['textile'] and mso_fe(ENGINE_DIR . 'autotag/textile.php')) 
 	{
-		require_once(ENGINE_DIR . 'textile/textile.php'); // textile-код
+		require_once(ENGINE_DIR . 'autotag/textile.php'); // textile-код
 		
 		$parser = new Textile('html5');
 		$out = $parser->textileThis($out);
@@ -1429,87 +1440,6 @@ function mso_holder($width = 100, $height = 100, $text = true, $background_color
 	return $src;
 }
 
-
-/**
-*  Функция использует глобальный одномерный массив который используется 
-*  для получения значения указанного ключа $key
-*  Если в массиве ключ не определён, то используется значение $default
-*  если $array = true, то возвращаем значение ключа массива $key[$default]
-*  
-*  
-*  @param $key ключ
-*  @param $default значение по-умолчанию
-*  @param $array возвратить значение массива ключа
-*  
-*  @return string
-*  
-*  см. примеры к mso_set_val()
-*/
-function mso_get_val($key = '', $default = '', $array = false)
-{
-	global $MSO;
-	
-	// нет такого массива, создаём
-	if (!isset($MSO['key_options'])) 
-	{
-		$MSO['key_options'] = array();
-		return $default;
-	}
-	
-	if ($array !== false and $default and isset($MSO['key_options'][$key][$default]))
-		return $MSO['key_options'][$key][$default]; 
-	else
-		// возвращаем значение или дефаулт
-		return (isset($MSO['key_options'][$key])) ? $MSO['key_options'][$key] :	$default; 
-}
-
-/**
-*  Функция обратная mso_get_val() - задаёт для ключа $key значение $val 
-*  если $val_val == null, присваиваем всему $key значение $val
-*  если $val_val != null, $val - это ключ массива
-*  
-*  
-*  @param $key ключ
-*  @param $val значение
-*  @param $val_val 
-*  
-*  mso_set_val('type_home', 'cache_time');
-* 		[type_home]=>'cache_time'
-* 
-*  mso_set_val('type_home', 'cache_time', 900); 
-*  mso_set_val('type_home', 'cache_limit', 7); 
-* 		[type_home] => Array
-* 		(
-*             [cache_time] => 900
-*             [cache_limit] => 7
-* 		)
-*/
-function mso_set_val($key, $val, $val_val = null)
-{
-	global $MSO;
-	
-	// нет массива, создаём
-	if (!isset($MSO['key_options'])) $MSO['key_options'] = array();
-
-	if ($val_val !== null)
-		$MSO['key_options'][$key][$val] = $val_val;
-	else
-		$MSO['key_options'][$key] = $val; // записали значение
-}
-
-/**
-*  Функция удаляет ключ $key
-*  
-*  @param $key ключ
-*  
-*/
-function mso_unset_val($key)
-{
-	global $MSO;
-	
-	if (isset($MSO['key_options'][$key])) unset($MSO['key_options'][$key]);
-}
-
 /**
 *  преобразовать строку с фрагментами, разделенных запятыми, в массив
 *  
@@ -1543,7 +1473,6 @@ function mso_explode($s, $probel = false, $unique = true)
 
 	return $out;
 }
-
 
 /**
 *  Возвращает snippet из каталога /snippets/
@@ -1629,6 +1558,7 @@ function mso_directory_map($source_dir, $directory_depth = 0, $hidden = FALSE)
 				$filedata[$file] = mso_directory_map($source_dir . $file . DIRECTORY_SEPARATOR, $new_depth, $hidden);
 			else
 				$filedata[] = $file;
+				// $filedata[] = htmlentities($file, ENT_QUOTES, 'cp1251');
 		}
 
 		closedir($fp);
@@ -1679,7 +1609,6 @@ function mso_get_yaml($fn)
 	global $VAR, $TITLE, $META, $META_LINK;
 
 	$key = 'yaml-' . $fn;
-	
 	$conf = mso_get_cache($key, 0, false, filemtime($fn));
 	
 	if (!$conf)
@@ -1705,13 +1634,17 @@ function mso_get_yaml($fn)
 	
 	if ($conf)
 	{
-		if (isset($conf['TITLE'])) $TITLE = $conf['TITLE'];
+		if (isset($conf['TITLE'])) 
+			$TITLE = $conf['TITLE'];
 			
-		if (isset($conf['VAR']) and is_array($conf['VAR']) ) $VAR = array_merge($VAR, $conf['VAR']);
+		if (isset($conf['VAR']) and is_array($conf['VAR']) ) 
+			$VAR = array_merge($VAR, $conf['VAR']);
 			
-		if (isset($conf['META']) and is_array($conf['META']) ) $META = array_merge($META, $conf['META']);
+		if (isset($conf['META']) and is_array($conf['META']) ) 
+			$META = array_merge($META, $conf['META']);
 			
-		if (isset($conf['META_LINK']) and is_array($conf['META_LINK']) ) $META_LINK = array_merge($META_LINK, $conf['META_LINK']);
+		if (isset($conf['META_LINK']) and is_array($conf['META_LINK']) ) 
+			$META_LINK = array_merge($META_LINK, $conf['META_LINK']);
 	}
 }
 
@@ -1731,13 +1664,12 @@ function mso_check_post()
 		if ($numargs === 0) return false; // нет аргументов, выходим
 
 		$args = func_get_args();
-		
 		$check = true;
 		
 		foreach ($args as $key=>$field)
 		{
-			if (!isset($_POST[$field]))
-			{  // нет значения - выходим
+			if (!isset($_POST[$field])) // нет значения - выходим
+			{  
 				$check = false;
 				break;
 			}
@@ -1746,6 +1678,14 @@ function mso_check_post()
 			else return $_POST;
 	}
 	else return false;
+}
+
+/**
+*  Возвращает расширение файла
+*/
+function mso_file_ext($file)
+{
+	return strtolower(substr(strrchr($file, '.'), 1));
 }
 
 #end of file
