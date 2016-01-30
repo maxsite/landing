@@ -52,3 +52,57 @@ $("#content").keydown(function(eventObject)
 		return false;
 	}
 });
+
+
+function addText(t, t2, elem){
+	var editor = document.getElementById(elem);
+	
+	if (document.selection) {
+		editor.focus();
+		sel = document.selection.createRange();
+		sel.text = t + sel.text + t2;
+		editor.focus();
+	}
+	else if (editor.selectionStart || editor.selectionStart == '0') {
+		var startPos = editor.selectionStart;
+		var endPos = editor.selectionEnd;
+		var cursorPos = endPos;
+		var scrollTop = editor.scrollTop;
+		if (startPos != endPos) {
+			editor.value = editor.value.substring(0, startPos)
+						  + t
+						  + editor.value.substring(startPos, endPos)
+						  + t2
+						  + editor.value.substring(endPos, editor.value.length);
+			cursorPos = startPos + t.length
+		}
+		else {
+			editor.value = editor.value.substring(0, startPos)
+							  + t
+							  + t2
+							  + editor.value.substring(endPos, editor.value.length);
+			cursorPos = startPos + t.length;
+		}
+		editor.focus();
+		editor.selectionStart = cursorPos;
+		editor.selectionEnd = cursorPos;
+		editor.scrollTop = scrollTop;
+	}
+	else {
+		editor.value += t + t2;
+	}
+}
+
+$('#panel-select').change(function()
+{
+	if ($(this).prop("checked"))
+	{
+		$('#panel-html').hide();
+		$('#panel-simple').show();
+	}
+	else
+	{
+		$('#panel-html').show();
+		$('#panel-simple').hide();
+	}
+})

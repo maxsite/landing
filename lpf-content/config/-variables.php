@@ -44,4 +44,60 @@
 # $VAR['nd_images'] = 'assets/images';
 # $VAR['nd_js'] = 'assets/js';
 
+
+/*
+
+// sample YAML in index.php  
+
+
+/ * ===
+
+TITLE: you title
+
+META:
+	description: you description
+	keywords: you keywords
+	viewport: width=device-width, initial-scale=1.0
+	generator: Landing Page Framework (lpf.maxsite.com.ua)
+
+	1:
+		property: og:title
+		content: you title
+
+	2:
+		property: og:description
+		content: you description
+
+	3:
+		property: og:url 
+		content: http://mysite.com/
+
+META_LINK:
+	1:
+		rel: canonical
+		href: http://mysite.com/
+
+VAR:
+	simple: true
+	compress_text: true
+	html_attr: lang="en" prefix="og:http://ogp.me/ns#"
+
+=== * /
+
+// Result
+
+<html lang="en" prefix="og:http://ogp.me/ns#"><head>
+<title>you title</title>
+<meta name="description" content="you description">
+<meta name="keywords" content="you keywords">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Landing Page Framework (lpf.maxsite.com.ua)">
+<meta property="og:title" content="you title">
+<meta property="og:description" content="you description">
+<meta property="og:url" content="http://mysite.com/">
+<link rel="canonical" href="http://mysite.com/">
+
+*/
+
+
 # end of file
