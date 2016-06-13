@@ -19,7 +19,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "31.0 27/12/2015"); // версия LPF
+define("LPF_VERSION", "31.2 21/05/2016"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -58,6 +58,7 @@ $VAR['end_file_text'] = false;
 $VAR['before_file'] = false;
 $VAR['after_file'] = false;
 $VAR['tmpl'] = false;
+$VAR['set_text'] = false;
 
 $VAR['nd_css'] = 'assets/css'; // каталог css
 $VAR['nd_images'] = 'assets/images'; // каталог images
@@ -128,7 +129,7 @@ function init()
 			// попробуем выставить page на верхний каталог category/news -> category
 			$page = substr($page, 0, $pos);
 			
-			// если есть text.php, то ставим эту page
+			// если есть index.php, то ставим эту page
 			if ( file_exists(PAGES_DIR . $page . DIRECTORY_SEPARATOR . $MSO['_page_file']) )
 				define('CURRENT_PAGE', $page);
 			else 
@@ -718,6 +719,11 @@ function mso_word_processing($out, $var = false)
 		}
 	}
 	
+	if ($var['set_text'])
+	{
+		$out = mso_auto_set1($out);
+		$out = mso_auto_set2($out);
+	}
 	
 	if ($var['autoremove']) $out = mso_autoremove($out);
 	
@@ -758,6 +764,46 @@ function mso_word_processing($out, $var = false)
 }
 
 /**
+*  Поиск в тексте вложений [set=1] любой текст [/set]
+*  где 1 — любое именованный фрагмент текста
+*  
+*  Вывод этого фрагмента: [set_out=1]
+*  
+*  @return string
+*/
+function mso_auto_set1($out)
+{
+	// [set=1] любой текст [/set]
+	$out = preg_replace_callback('!\[set=(.*?)\](.*?)\[\/set\]!is', 'mso_set1_callback', $out);
+	
+	return $out;
+}
+
+function mso_auto_set2($out)
+{
+	// [set_out=1]
+	$out = preg_replace_callback('!\[set_out=(.*?)\]!is', 'mso_set2_callback', $out);
+	return $out;
+}
+
+function mso_set1_callback($matches)
+{
+	global $MSO;
+	
+	$MSO['_sets'][$matches[1]] = $matches[2];
+	
+	return $matches[2];
+}
+
+function mso_set2_callback($matches)
+{
+	global $MSO;
+	
+	return (isset($MSO['_sets'][$matches[1]])) ? $MSO['_sets'][$matches[1]] : '';
+}
+
+
+/**
 *  pre, которое загоняется в [html_base64]
 *  
 *  @param $matches 
@@ -768,8 +814,8 @@ function mso_clean_pre_do($matches)
 {
 	$text = trim($matches[2]);
 
-	$text = str_replace('<p>', '', $text);
-	$text = str_replace('</p>', '', $text);
+	// $text = str_replace('<p>', '', $text);
+	// $text = str_replace('</p>', '', $text);
 	$text = str_replace('[', '&#91;', $text);
 	$text = str_replace(']', '&#93;', $text);
 	$text = str_replace("<br>", "\n", $text);
