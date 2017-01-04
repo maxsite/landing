@@ -13,7 +13,7 @@ $URL_ADMIN = BASE_URL . CURRENT_PAGE_ROOT;
 
 	<span class="b-inline b-right pad5 pad10-r">
 		<a class="i-home" href="<?= BASE_URL ?>">Home</a> 
-		<a class="mar20-l i-sign-out" href="?logout">Logout</a>
+		<a class="mar20-l i-sign-out" href="?logout">Logout <?php echo isset($_SESSION['username']) ? sprintf('(%s)', $_SESSION['username']) : ''?></a>
 	</span>
 </p>
 
