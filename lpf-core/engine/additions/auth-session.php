@@ -59,7 +59,7 @@ function mso_auth_init($OPTIONS = true)
 	$OPTIONS = array_merge($def_options, $OPTIONS);
 	
 	// если нет логина и пароля, то всё рубим
-	if (!$OPTIONS['username'] and !$OPTIONS['password'])
+	if (empty($OPTIONS['users']))
 	{
 		die('Not specified username and password to login (mso_auth)');
 	}
@@ -74,21 +74,18 @@ function mso_auth_init($OPTIONS = true)
 	if (mso_url_request(false, $OPTIONS['login_link']))
 	{
 		// если есть post, то проверяем данные
-		if ($_POST 	
-			and isset($_POST['flogin_user'])
-			and isset($_POST['flogin_password'])
-			and isset($_POST['flogin_submit']) 
-			)
-		{
+		if (isset($_POST['flogin_user'], $_POST['flogin_password'], $_POST['flogin_submit'])){
+
+			$user = cstm_find_user($_POST['flogin_user'], $_POST['flogin_password']);
+
+
 			// сравниваем логин и пароль
-			if ( strcmp($_POST['flogin_user'], $OPTIONS['username']) == 0
-				 and strcmp($_POST['flogin_password'], $OPTIONS['password']) == 0 )
-			{
+			if ($user) {
 				// равно
 				if (!isset($_SESSION)) session_start();
 				
-				$_SESSION['username'] = $OPTIONS['username'];
-				$_SESSION['password'] = $OPTIONS['password'];
+				$_SESSION['username'] = $user['username'];
+				$_SESSION['password'] = $user['password'];
 				
 				// все ок!
 				header('Location:' . $url_redirect);
@@ -168,6 +165,24 @@ function mso_check_auth($text_login = '<a href="?login">Вход</a>')
 	return false;
 }
 
+function cstm_find_user($username, $password, $OPTIONS = true) {
+	// если $OPTIONS === true, то загружаем из auth/auth-options.php текущей page
+	if ($OPTIONS === true)
+	{
+		$OPTIONS = mso_load_options(CURRENT_PAGE_DIR . 'auth/auth-options.php');
+	}
+
+	$user = null;
+
+	foreach ($OPTIONS['users'] as $item) {
+		if(strcmp($item['username'], $username) && strcmp($item['password'], $password)) {
+			$user = $item;
+			break;
+		}
+	}
+
+	return $user;
+}
 
 # проверка залогированности
 # возвращает true — если логин и пароль верный
@@ -182,10 +197,8 @@ function mso_is_auth($OPTIONS = true)
 	if (!isset($_SESSION)) session_start();
 	
 	if (
-		isset($_SESSION['username'])
-		and isset($_SESSION['password'])
-		and strcmp($_SESSION['username'], $OPTIONS['username']) === 0
-		and	strcmp($_SESSION['password'], $OPTIONS['password']) === 0
+		isset($_SESSION['username'], $_SESSION['password'])
+		and cstm_find_user($_SESSION['username'], $_SESSION['password']) !== null
 	)
 		return true;
 	else
