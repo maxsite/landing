@@ -19,7 +19,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "31.2 21/05/2016"); // версия LPF
+define("LPF_VERSION", "31.3 10/06/2017"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -102,11 +102,13 @@ function init()
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
 	if (!defined('PAGE_404')) define('PAGE_404', '404');
 	
-	// если в адресе есть localhost, то выставляем константу
-	if (stripos(BASEURL, '/localhost/') === false) 
-		define('LOCALHOST', false);
-	else
+	// если в адресе есть localhost или это 127.0.0.1, то выставляем константу
+	if (stripos(BASEURL, '/localhost/') !== false) 
 		define('LOCALHOST', true);
+	elseif ($_SERVER['REMOTE_ADDR'] === '127.0.0.1' and $_SERVER['SERVER_ADDR'] === '127.0.0.1')
+		define('LOCALHOST', true);
+	else
+		define('LOCALHOST', false);
 		
 	$page = (isset($_GET['page'])) ? $_GET['page'] : HOME_PAGE;
 	
