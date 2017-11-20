@@ -19,7 +19,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "31.3 10/06/2017"); // версия LPF
+define("LPF_VERSION", "32.0 20/11/2017"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -43,6 +43,7 @@ $VAR['nocss'] = false;
 $VAR['nojs'] = false;
 $VAR['nofavicon'] = false;
 $VAR['nocache'] = false;
+$VAR['cache_time'] = 86400; // время жизни кэша страницы в секундах (24 часа)
 $VAR['html_attr'] = '';
 $VAR['body_attr'] = '';
 $VAR['no_output_only_file'] = false;
@@ -59,6 +60,7 @@ $VAR['before_file'] = false;
 $VAR['after_file'] = false;
 $VAR['tmpl'] = false;
 $VAR['set_text'] = false;
+$VAR['stat_out'] = true; // вывод статистики
 
 $VAR['nd_css'] = 'assets/css'; // каталог css
 $VAR['nd_images'] = 'assets/images'; // каталог images
@@ -72,6 +74,7 @@ $MSO['_loaded_script'] = array(); // список загруженых js-скр
 $MSO['_loaded_css'] = array(); // список загруженых css-файлов
 $MSO['_routing_page'] = '_routing'; // страница роутинга
 $MSO['_cache_suffix'] = ''; // добавка к имени файла кэша
+$MSO['_cache_yaml'] = true; // разрешить кэш для yaml-опций см.lpf-content/config/config.php
 
 // http-адрес сайта
 $base_url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
@@ -83,7 +86,7 @@ define("BASE_URL", BASEURL); // аналог BASEURL для унификации
 define("BASE_DIR", BASEPATH); // аналог BASEPATH для унификации
 
 /**
-*  функция инициализации
+*  функция инициализации  (см. start.php)
 */
 function init()
 {
@@ -208,6 +211,46 @@ function init()
 	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'lpf-content/snippets/'); 
 	
 }
+
+/**
+*  функция инициализации, срабатывающаяя перед выводом данных (см. start.php)
+*/
+function init2()
+{
+	global $VAR, $MSO;
+	
+	// если указано время жизни страницы, то проверим его с закэшированной
+	// если время истекло, то удалим кэшированную страницу
+	
+	if ($VAR['cache_time'] > 0)
+	{
+		// см. mso_output_text()
+
+		// имя кеша строится по фиксированному шаблону
+		$cache_file = CURRENT_PAGE . '_' . $MSO['_page_file'] . $MSO['_cache_suffix'];
+		
+		if ( isset($_SERVER['REQUEST_URI']) and $_SERVER['REQUEST_URI'] and (strpos($_SERVER['REQUEST_URI'], '?') !== FALSE) )
+		{
+			$cache_file .= '-' . md5($_SERVER['REQUEST_URI']);
+		}
+		
+		$cache_file = str_replace(array('.', '/', '\\', '?'), '-', $cache_file);
+		$cache_file = CACHE_DIR . $cache_file . '-' . md5(BASE_URL) . '.txt';
+		
+		// есть кеш?
+		if (mso_fe($cache_file))
+		{
+			$t_cache_file = filemtime($cache_file); // время файла кеша в секундах Unix
+			$t_diff = time() - $t_cache_file; // разница с текущим временем
+			
+			if ($t_diff > $VAR['cache_time']) 
+			{
+				@unlink($cache_file); // сброс кэша страницы
+			}
+		}
+	}
+}
+
 
 /**
 *  функция для отладки
@@ -533,25 +576,30 @@ function mso_stat_out()
 {
 	global $_TIME_START, $VAR, $MSO;
 	
-	$time = number_format( microtime(true) - $_TIME_START , 6) . 'sec';
-	$memory	 = (!function_exists('memory_get_usage')) ? '0' : round(memory_get_usage()/1024/1024, 2) . 'Mb';
+	$out = '';
 	
-	$out = $time . ' | ' . $memory;
-	
-	if ($MSO['_use_cache']) $out .= ' | Cache';
-	if ($VAR['bbcode']) $out .= ' | BBCode';
-	if ($VAR['markdown']) $out .= ' | Markdown';
-	if ($VAR['simple']) $out .= ' | Simple';
-	if ($VAR['textile']) $out .= ' | Textile';
-	if ($VAR['nocss']) $out .= ' | NoCSS';
-	if ($VAR['nojs']) $out .= ' | NoJS';
-	// if ($VAR['autotag']) $out .= ' | AutoTag';
-	if ($VAR['autotag_my']) $out .= ' | AutoTag (' . $VAR['autotag_my'] . ')';
-	if ($VAR['autopre']) $out .= ' | AutoPRE';
-	if ($VAR['compress_text']) $out .= ' | Compress text';
-	if ($VAR['remove_protocol']) $out .= ' | Remove protocol';
-	
-	$out = NR . '<!-- (c) Landing Page Framework http://lpf.maxsite.com.ua/ | ' . $out . ' | Putin huilo! | Crimea this Ukraine! -->' . NR;
+	if ($VAR['stat_out'])
+	{
+		$time = number_format( microtime(true) - $_TIME_START , 6) . 'sec';
+		$memory	 = (!function_exists('memory_get_usage')) ? '0' : round(memory_get_usage()/1024/1024, 2) . 'Mb';
+		
+		$out = $time . ' | ' . $memory;
+		
+		if ($MSO['_use_cache']) $out .= ' | Cache';
+		if ($VAR['bbcode']) $out .= ' | BBCode';
+		if ($VAR['markdown']) $out .= ' | Markdown';
+		if ($VAR['simple']) $out .= ' | Simple';
+		if ($VAR['textile']) $out .= ' | Textile';
+		if ($VAR['nocss']) $out .= ' | NoCSS';
+		if ($VAR['nojs']) $out .= ' | NoJS';
+		// if ($VAR['autotag']) $out .= ' | AutoTag';
+		if ($VAR['autotag_my']) $out .= ' | AutoTag (' . $VAR['autotag_my'] . ')';
+		if ($VAR['autopre']) $out .= ' | AutoPRE';
+		if ($VAR['compress_text']) $out .= ' | Compress text';
+		if ($VAR['remove_protocol']) $out .= ' | Remove protocol';
+		
+		$out = NR . '<!-- Generator: (c) Landing Page Framework, http://lpf.maxsite.com.ua/ | ' . $out . ' -->' . NR;
+	}
 	
 	echo $out . '</body></html>';
 }
@@ -640,7 +688,7 @@ function mso_output_text()
 				
 				$MSO['_use_cache'] = true; // для статистики
 				
-				return ''; 
+				return '';
 			}
 		}
 		
@@ -1654,11 +1702,16 @@ function mso_tmpl_prepare($template, $replace = false)
  */
 function mso_get_yaml($fn)
 {
-	global $VAR, $TITLE, $META, $META_LINK;
-
-	$key = 'yaml-' . $fn;
-	$conf = mso_get_cache($key, 0, false, filemtime($fn));
+	global $MSO, $VAR, $TITLE, $META, $META_LINK;
 	
+	$conf = false;
+
+	if ($MSO['_cache_yaml'])
+	{
+		$key = 'yaml-' . $fn;
+		$conf = mso_get_cache($key, 0, false, filemtime($fn));
+	}
+		
 	if (!$conf)
 	{
 		$data = file_get_contents($fn);
@@ -1676,7 +1729,8 @@ function mso_get_yaml($fn)
 			require_once(ENGINE_DIR . 'yaml/Spyc.php');
 			
 			$conf = spyc_load($yaml);
-			mso_add_cache($key, $conf);
+			
+			if ($MSO['_cache_yaml']) mso_add_cache($key, $conf);
 		}
 	}
 	

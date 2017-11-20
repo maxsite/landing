@@ -44,6 +44,8 @@ if ($VAR['no_output_only_file'] and $fn = mso_fe(CURRENT_PAGE_DIR . $VAR['no_out
 	exit;
 }
 
+init2();
+
 if ($VAR['generate_static_page']) ob_start();
 
 if ($VAR['before_file'] and $fn = mso_fe($VAR['before_file'])) require($fn);
