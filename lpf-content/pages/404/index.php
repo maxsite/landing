@@ -6,7 +6,7 @@ TITLE: 404 — Not found
 
 META:
 	description: Landing Page Framework
-	keywords: lLanding page, php-framework
+	keywords: Landing page, php-framework
 	viewport: width=device-width, initial-scale=1.0
 	generator: Landing Page Framework (lpf.maxsite.com.ua)
 

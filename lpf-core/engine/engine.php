@@ -19,7 +19,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "32.0 20/11/2017"); // версия LPF
+define("LPF_VERSION", "34.1 16/12/2017"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -51,6 +51,7 @@ $VAR['autoload_css_page'] = true;
 $VAR['autoload_js_page'] = true;
 $VAR['generate_static_page'] = false;
 $VAR['generate_static_page_base_url'] = '';
+$VAR['generate_static_page_function'] = '';
 $VAR['head_file'] = true;
 $VAR['start_file'] = true;
 $VAR['end_file'] = true;
@@ -1383,7 +1384,10 @@ function mso_lorem($count = 50, $color = false)
 	else 
 		$text = $LoremText;
 	
-	$text = trim($text);
+	$text = trim($text) . '.';
+	
+	$text = str_replace('..', '.', $text);
+	
 	
 	if ($color) $text = '<span style="color: ' . $color . '">' . $text . '</span>';
 	
@@ -1789,5 +1793,73 @@ function mso_file_ext($file)
 {
 	return strtolower(substr(strrchr($file, '.'), 1));
 }
+
+/**
+*  Возвращает DATA-URI
+*  data:image/png;base64, base64-файл
+*  Путь к файлу указывается полный
+*  <img src="< ?= mso_data_uri(CURRENT_PAGE_DIR . '1.png') ? >">
+*/
+function mso_data_uri($file)
+{
+	if (file_exists($file))
+	{
+		if ($data = file_get_contents($file))
+		{
+			$mime = 'text/plain';
+			$ext = mso_file_ext($file);
+			
+			if ($ext == 'png') $mime = 'image/png';
+			elseif ($ext == 'jpg' or $ext == 'jpeg') $mime = 'image/jpeg';
+			elseif ($ext == 'gif') $mime = 'image/gif';
+			elseif ($ext == 'svg') $mime = 'image/svg+xml';
+			elseif ($ext == 'webp') $mime = 'image/webp';
+			elseif ($ext == 'html' or $ext == 'htm') $mime = 'text/html';
+			elseif ($ext == 'php') $mime = 'text/php';
+			elseif ($ext == 'css') $mime = 'text/css';
+			elseif ($ext == 'xml') $mime = 'text/xml';
+			
+			return 'data:' . $mime . ';base64,' . base64_encode($data);
+		}
+	}
+}
+
+/**
+*  generate static page
+*/
+function mso_generate_static_page()
+{
+	global $VAR;
+	
+	if ($fn = $VAR['generate_static_page'])
+	{
+		$out = ob_get_flush();
+		if ($VAR['generate_static_page_function'] and function_exists($VAR['generate_static_page_function']))
+		{
+			$f = $VAR['generate_static_page_function'];
+			$out = $f($out);
+		}
+		
+		if ($VAR['generate_static_page_base_url'] !== false)
+			$out = str_replace(BASE_URL, $VAR['generate_static_page_base_url'], $out);
+		
+		$i = pathinfo($fn);
+		
+		// проверим существование подкаталога для вложенных страниц
+		if (is_dir($i['dirname']))
+		{
+			file_put_contents($fn, $out);
+		}
+		else
+		{
+			// нет подкаталога, пробуем создать
+			@mkdir($i['dirname']);
+			
+			if (is_dir($i['dirname'])) 
+				file_put_contents($fn, $out);
+		}
+	}
+}
+
 
 #end of file
