@@ -1,4 +1,0 @@
-.htaccess
-/lpf-core/cache/*
-.gitignore
-/lpf-content/pages/auth/

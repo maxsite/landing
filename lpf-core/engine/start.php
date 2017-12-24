@@ -22,6 +22,7 @@ if ($fn = mso_fe(CURRENT_PAGE_DIR . 'variables.php'))
 else 
 	mso_get_yaml(CURRENT_PAGE_FILE);
 
+if ($fn = mso_fe(BASEPATH . 'lpf-content/config/functions.php')) require($fn);
 if ($fn = mso_fe(CURRENT_PAGE_DIR . 'functions.php')) require($fn);
 
 if ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) or (isset($_POST) and $_POST) )
