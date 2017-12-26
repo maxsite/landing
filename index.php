@@ -14,23 +14,16 @@ else
 
 require_once(ENGINE_DIR . 'start.php');
 
-?><!DOCTYPE HTML>
-<html<?= ($VAR['html_attr']) ? ' ' . $VAR['html_attr'] : '' ?>><head>
-<meta charset="UTF-8">
-<title><?= $TITLE ?></title>
-<?php 
+?><!DOCTYPE HTML><html<?= ($VAR['html_attr']) ? ' ' . $VAR['html_attr'] : '' ?>><head><meta charset="UTF-8"><title><?= $TITLE ?></title><?php 
 	mso_meta();
 	mso_head();
 	if ($fn = mso_fe($VAR['head_file'])) require($fn);
-?>
-</head>
-<body<?= ($VAR['body_attr']) ? ' ' . $VAR['body_attr'] : '' ?>>
-<?php
+?></head><body<?= ($VAR['body_attr']) ? ' ' . $VAR['body_attr'] : '' ?>><?php
 	if ($fn = mso_fe($VAR['start_file'])) require($fn);
 	mso_output_text();
 	if ($fn = mso_fe($VAR['end_file'])) require($fn);
 	if ($VAR['after_file'] and $fn = mso_fe($VAR['after_file'])) require($fn);
 	mso_stat_out();
-	if ($fn = $VAR['generate_static_page']) file_put_contents($fn, str_replace(BASE_URL, $VAR['generate_static_page_base_url'], ob_get_flush()));
+	mso_generate_static_page();
 
 # end of file
