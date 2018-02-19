@@ -19,7 +19,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "35.0 24/12/2017"); // версия LPF
+define("LPF_VERSION", "35.6 19/02/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -1276,6 +1276,23 @@ function mso_lazy($to = null)
 		
 		$out .= $to_out; // вывод остального
 		
+		
+		// !!! экспериментальная возможность загружать -lazy.css в конце BODY
+		// autoload css-файлов из ASSETS_URL
+		if ($VAR['nocss'] === false)
+		{
+			if (file_exists(ASSETS_DIR . 'css/-lazy.css'))
+				$out .= '<link rel="stylesheet" href="' . ASSETS_URL . 'css/-lazy.css">';
+		}
+		
+		// разрешена автозагрузка из текущей page
+		if($VAR['autoload_css_page'] === true) 
+		{
+			if (file_exists(CURRENT_PAGE_DIR . 'css/-lazy.css'))
+				$out .= '<link rel="stylesheet" href="' . CURRENT_PAGE_URL . 'css/-lazy.css">';
+		}
+		// !!!
+		
 		return $out;
 	}
 	else
@@ -1443,7 +1460,7 @@ function mso_array_php_to_js($a, $def = array(), $ignore = array('element', 'loa
 
 /**
 *  Формирование строчки html-кода js-скрипта (jQuery)
-*  <script>$(document).ready(function(){ $('ЭЛЕМЕНТ').ФУНКЦИЯ({ОПЦИИ})})</script>
+*  <script>$(function(){ $('ЭЛЕМЕНТ').ФУНКЦИЯ({ОПЦИИ})})</script>
 *  
 *  @param $element — элемент
 *  @param $function — функция
@@ -1453,7 +1470,7 @@ function mso_array_php_to_js($a, $def = array(), $ignore = array('element', 'loa
 */
 function mso_jsscript($element, $function, $options, $do = '', $posle = '')
 {
-	return "<script>$(document).ready(function(){" . $do . "\$('" . $element . "')." . $function . "({" . $options . "})" . $posle . "})</script>";
+	return "<script>$(function(){" . $do . "\$('" . $element . "')." . $function . "({" . $options . "})" . $posle . "})</script>";
 }
 
 /**
