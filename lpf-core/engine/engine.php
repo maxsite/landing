@@ -5,8 +5,7 @@
 	
 	Made in Ukraine | Зроблено в Україні
 	
-	License:  Putin huilo! | Путин хуйло!
-	          Crimea this Ukraine! | Крым — это Украина!
+	License: Crimea this Ukraine! | Крым — это Украина!
 				
 	Copyright:
 		MaxSite CMS: http://max-3000.com/
@@ -19,7 +18,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "35.6 19/02/2018"); // версия LPF
+define("LPF_VERSION", "36.0 21/02/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -52,9 +51,14 @@ $VAR['autoload_js_page'] = true;
 $VAR['generate_static_page'] = false;
 $VAR['generate_static_page_base_url'] = '';
 $VAR['generate_static_page_function'] = '';
+
 $VAR['head_file'] = true;
+$VAR['head_file1'] = false;
 $VAR['start_file'] = true;
+$VAR['start_file1'] = false;
 $VAR['end_file'] = true;
+$VAR['end_file1'] = false;
+
 $VAR['start_file_text'] = false;
 $VAR['end_file_text'] = false;
 $VAR['before_file'] = false;
@@ -96,11 +100,15 @@ function init()
 	// можно проверить наличие файла .htaccess
 	if (!file_exists(BASEPATH . '.htaccess')) mso_create_htaccess();
 	
+	// путь к lpf-content
+	if (!defined('LPF_CONTENT_DIR')) define("LPF_CONTENT_DIR", BASE_DIR . 'lpf-content' . DIRECTORY_SEPARATOR); 
+	if (!defined('LPF_CONTENT_URL')) define("LPF_CONTENT_URL", BASE_URL . 'lpf-content/');
+	
 	// путь к /pages/ на сервере
-	if (!defined('PAGES_DIR')) define("PAGES_DIR", BASE_DIR . 'lpf-content/pages' . DIRECTORY_SEPARATOR); 
+	if (!defined('PAGES_DIR')) define("PAGES_DIR", LPF_CONTENT_DIR . 'pages' . DIRECTORY_SEPARATOR); 
 	
 	// http-путь к /pages/ на сервере
-	if (!defined('PAGES_URL')) define("PAGES_URL", BASE_URL . 'lpf-content/pages/'); 
+	if (!defined('PAGES_URL')) define("PAGES_URL", LPF_CONTENT_URL . 'pages/'); 
 	
 	
 	if (!defined('HOME_PAGE')) define('HOME_PAGE', 'home');
@@ -185,10 +193,10 @@ function init()
 	if ($fn = mso_fe(CURRENT_PAGE_DIR . 'init.php')) require($fn);
 	
 	// путь к /set/ на сервере — если используется
-	if (!defined('SET_DIR')) define("SET_DIR", BASE_DIR . 'lpf-content/set' . DIRECTORY_SEPARATOR); 
+	if (!defined('SET_DIR')) define("SET_DIR", LPF_CONTENT_DIR . 'set' . DIRECTORY_SEPARATOR); 
 	
 	// http-путь к /set/ на сервере
-	if (!defined('SET_URL')) define("SET_URL", BASE_URL . 'lpf-content/set/');
+	if (!defined('SET_URL')) define("SET_URL", LPF_CONTENT_URL . 'set/');
 	
 	// путь к /assets/ на сервере — если используется
 	if (!defined('ASSETS_DIR')) define("ASSETS_DIR", BASE_DIR . 'assets' . DIRECTORY_SEPARATOR); 
@@ -197,19 +205,19 @@ function init()
 	if (!defined('ASSETS_URL')) define("ASSETS_URL", BASE_URL . 'assets/');
 	
 	// путь к /components/ на сервере
-	if (!defined('COMPONENTS_DIR')) define("COMPONENTS_DIR", BASE_DIR . 'lpf-content/components' . DIRECTORY_SEPARATOR); 
+	if (!defined('COMPONENTS_DIR')) define("COMPONENTS_DIR", LPF_CONTENT_DIR . 'components' . DIRECTORY_SEPARATOR); 
 
 	// http-путь к /components/
-	if (!defined('COMPONENTS_URL')) define("COMPONENTS_URL", BASE_URL . 'lpf-content/components/'); 
+	if (!defined('COMPONENTS_URL')) define("COMPONENTS_URL", LPF_CONTENT_URL . 'components/'); 
 	
 	// каталог cache
 	if (!defined('CACHE_DIR')) define("CACHE_DIR", BASE_DIR . 'lpf-core/cache' . DIRECTORY_SEPARATOR); 
 	
 	// путь к /snippets/ на сервере
-	if (!defined('SNIPPETS_DIR')) define("SNIPPETS_DIR", BASE_DIR . 'lpf-content/snippets' . DIRECTORY_SEPARATOR); 
+	if (!defined('SNIPPETS_DIR')) define("SNIPPETS_DIR", LPF_CONTENT_DIR . 'snippets' . DIRECTORY_SEPARATOR); 
 
 	// http-путь к /snippets/
-	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", BASE_URL . 'lpf-content/snippets/'); 
+	if (!defined('SNIPPETS_URL')) define("SNIPPETS_URL", LPF_CONTENT_URL . 'snippets/'); 
 	
 }
 
@@ -326,7 +334,10 @@ function _pr($var, $html = false)
 */
 function mso_fe($file)
 {
-	return (file_exists($file)) ? $file : false;
+	if ($file)
+		return (file_exists($file)) ? $file : false;
+	else
+		return false;
 }
 
 /**
