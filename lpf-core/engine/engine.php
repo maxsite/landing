@@ -18,7 +18,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.0 21/02/2018"); // версия LPF
+define("LPF_VERSION", "36.1 27/03/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -1288,12 +1288,15 @@ function mso_lazy($to = null)
 		$out .= $to_out; // вывод остального
 		
 		
-		// !!! экспериментальная возможность загружать -lazy.css в конце BODY
-		// autoload css-файлов из ASSETS_URL
+		// autoload css-файлов из ASSETS_URL/-lazy.css
+		// и css/lazy/ в конце BODY
 		if ($VAR['nocss'] === false)
 		{
 			if (file_exists(ASSETS_DIR . 'css/-lazy.css'))
 				$out .= '<link rel="stylesheet" href="' . ASSETS_URL . 'css/-lazy.css">';
+			
+			$out .= mso_autoload($VAR['nd_css'], true, false, '/lazy/');
+			
 		}
 		
 		// разрешена автозагрузка из текущей page
@@ -1301,8 +1304,10 @@ function mso_lazy($to = null)
 		{
 			if (file_exists(CURRENT_PAGE_DIR . 'css/-lazy.css'))
 				$out .= '<link rel="stylesheet" href="' . CURRENT_PAGE_URL . 'css/-lazy.css">';
+			
+			// загрузка из css/lazy/
+			$out .= mso_autoload('css', false, true, '/lazy/');
 		}
-		// !!!
 		
 		return $out;
 	}
