@@ -18,7 +18,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.1 27/03/2018"); // версия LPF
+define("LPF_VERSION", "36.2 20/04/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -1399,12 +1399,15 @@ function mso_get_cache($key, $time = 3600, $r = false, $compare_time = false)
 *  
 *  @param $count количество слов
 *  @param $color если указан $color, то текст обрамляется в <span> с color: $color
+*  @param $dot : если false, то удаляются все знаки препинания
+*  @param $LoremText : можно задать свой текст
 *  
 *  @return string
 */
-function mso_lorem($count = 50, $color = false)
+function mso_lorem($count = 50, $color = false, $dot = true, $LoremText = true)
 {
-	$LoremText = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Vivamus vitae risus vitae lorem iaculis placerat. Aliquam sit amet felis. Etiam congue. Donec risus risus, pretium ac, tincidunt eu, tempor eu, quam. Morbi blandit mollis magna. Suspendisse eu tortor. Donec vitae felis nec ligula blandit rhoncus. Ut a pede ac neque mattis facilisis. Nulla nunc ipsum, sodales vitae, hendrerit non, imperdiet ac, ante. Morbi sit amet mi. Ut magna. Curabitur id est. Nulla velit. Sed consectetuer sodales justo. Aliquam dictum gravida libero. Sed eu turpis. Nunc id lorem. Aenean consequat tempor mi. Phasellus in neque. Nunc fermentum convallis ligula. Suspendisse in nulla. Nunc eu ipsum tincidunt risus pellentesque fringilla. Integer iaculis pharetra eros. Nam ut sapien quis arcu ullamcorper cursus. Vestibulum tempor nisi rhoncus eros. Sed iaculis ultricies tellus. Cras pellentesque erat eu urna. Cras malesuada. Quisque congue ultricies neque. Nullam a nisl. Sed convallis turpis a ante. Morbi eu justo sed tortor euismod porttitor. Aenean ut lacus. Maecenas nibh eros, dapibus at, pellentesque in, auctor a, enim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aliquam congue pede a ipsum. Sed libero quam, sodales eget, venenatis non, cursus vel, velit. In vulputate. In vehicula. Aenean quam mauris, vehicula non, suscipit at, venenatis sed, arcu. Etiam ornare fermentum felis. Donec ligula metus, placerat quis, blandit at, congue molestie, ante. Donec viverra nibh et dolor.";
+	if ($LoremText === true)
+		$LoremText = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Vivamus vitae risus vitae lorem iaculis placerat. Aliquam sit amet felis. Etiam congue. Donec risus risus, pretium ac, tincidunt eu, tempor eu quam. Morbi blandit mollis magna. Suspendisse eu tortor. Donec vitae felis nec ligula blandit rhoncus. Ut a pede ac neque mattis facilisis. Nulla nunc ipsum, sodales vitae, hendrerit non, imperdiet ac ante. Morbi sit amet mi. Ut magna. Curabitur id est. Nulla velit. Sed consectetuer sodales justo. Aliquam dictum gravida libero. Sed eu turpis. Nunc id lorem. Aenean consequat tempor mi. Phasellus in neque. Nunc fermentum convallis ligula. Suspendisse in nulla. Nunc eu ipsum tincidunt risus pellentesque fringilla. Integer iaculis pharetra eros. Nam ut sapien quis arcu ullamcorper cursus. Vestibulum tempor nisi rhoncus eros. Sed iaculis ultricies tellus. Cras pellentesque erat eu urna. Cras malesuada. Quisque congue ultricies neque. Nullam a nisl. Sed convallis turpis a ante. Morbi eu justo sed tortor euismod porttitor. Aenean ut lacus. Maecenas nibh eros, dapibus at, pellentesque in, auctor a enim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aliquam congue pede a ipsum. Sed libero quam, sodales eget, venenatis non, cursus vel velit. In vulputate. In vehicula. Aenean quam mauris, vehicula non, suscipit at, venenatis sed arcu. Etiam ornare fermentum felis. Donec ligula metus, placerat quis, blandit at, congue molestie ante. Donec viverra nibh et dolor.";
 	
 	// перетусуем предложения
 	$ar = explode('.', $LoremText);
@@ -1419,8 +1422,12 @@ function mso_lorem($count = 50, $color = false)
 	
 	$text = trim($text) . '.';
 	
+	$text = str_replace(',.', '.', $text);
 	$text = str_replace('..', '.', $text);
 	
+	if (!$dot) $text = trim(str_replace(array('.', ','), '', $text));
+	
+	if (strpos($text, '.') === 0) $text = mb_substr($text, 1);    
 	
 	if ($color) $text = '<span style="color: ' . $color . '">' . $text . '</span>';
 	
