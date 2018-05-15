@@ -18,7 +18,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.2 20/04/2018"); // версия LPF
+define("LPF_VERSION", "36.3 14/05/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -386,7 +386,7 @@ function mso_fr($file, $dir = '', $return_content = false)
 *  
 *  @return array
 */
-function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts = array('jpg', 'jpeg', 'png', 'gif', 'ico', 'svg'))
+function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts = array('jpg', 'jpeg', 'png', 'gif', 'ico', 'svg'), $minus = true)
 {
 	// если не указаны пути, то отдаём пустой массив
 	if (!$path) return array();
@@ -408,8 +408,11 @@ function mso_get_path_files($path = '', $path_url = '', $full_path = true, $exts
 		// расширение подходит?
 		if (in_array($ext, $exts))
 		{
-			if (strpos($file, '_') === 0) continue; // исключаем файлы, начинающиеся с _
-			if (strpos($file, '-') === 0) continue; // исключаем файлы, начинающиеся с -
+			if ($minus)
+			{
+				if (strpos($file, '_') === 0) continue; // исключаем файлы, начинающиеся с _
+				if (strpos($file, '-') === 0) continue; // исключаем файлы, начинающиеся с -
+			}
 			
 			// добавим файл в массив сразу с полным адресом
 			if ($full_path)
