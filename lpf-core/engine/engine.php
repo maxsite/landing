@@ -18,7 +18,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.3 14/05/2018"); // версия LPF
+define("LPF_VERSION", "36.4 30/06/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
@@ -163,6 +163,9 @@ function init()
 		// возможно указана страница routing
 		if ( file_exists(PAGES_DIR . $MSO['_routing_page'] . '/' . $MSO['_page_file']) )
 			$page = $MSO['_routing_page']; // отдаем её как есть
+		
+		// возможно есть файл config/routing.php, который может сам обработать $page
+		if ($fn = mso_fe(LPF_CONTENT_DIR . 'config/routing.php')) require($fn);
 		
 		define('CURRENT_PAGE', $page);
 	}
