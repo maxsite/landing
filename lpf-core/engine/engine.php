@@ -3,68 +3,69 @@
 	(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
 	(c) MAX — http://maxsite.org/
 	
-	Made in Ukraine | Зроблено в Україні
+	Made in Ukraine      | Зроблено в Україні
+	Crimea this Ukraine! | Крым — это Украина!
 	
-	License: Crimea this Ukraine! | Крым — это Украина!
-				
 	Copyright:
 		MaxSite CMS: http://max-3000.com/
 		CodeIgniter: http://codeigniter.com/
 		Textile: http://txstyle.org/article/36/php-textile
 		Markdown Extra: http://michelf.ca/projects/php-markdown/
-		Spyc - A Simple PHP YAML Class — https://github.com/mustangostang/spyc/
+		Spyc - A Simple PHP YAML Class: https://github.com/mustangostang/spyc/
 
 */
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.4 30/06/2018"); // версия LPF
+define("LPF_VERSION", "36.5 3/10/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор
 
 // переменные, которые используются в шаблоне
-$TITLE = '';
-$META = array();
-$META_LINK = array();
+$TITLE = ''; // title страницы
+$META = array(); // массив для meta
+$META_LINK = array(); // массив для meta link
 
 // $VAR['autotag'] = false; // пока не используется
-$VAR['autotag_my'] = false;
-$VAR['bbcode'] = false;
-$VAR['markdown'] = false;
-$VAR['textile'] = false;
-$VAR['simple'] = false;
-$VAR['autopre'] = false;
-$VAR['autoremove'] = false;
-$VAR['compress_text'] = false;
-$VAR['remove_protocol'] = false;
-$VAR['nocss'] = false;
-$VAR['nojs'] = false;
-$VAR['nofavicon'] = false;
-$VAR['nocache'] = false;
+
+$VAR['autotag_my'] = false; // свой парсер текста
+$VAR['bbcode'] = false; // парсер bb-кода
+$VAR['markdown'] = false; // парсер markdown
+$VAR['textile'] = false; // парсер textile
+$VAR['simple'] = false; // парсер simple
+$VAR['autopre'] = false; // защищать текст в PRE html-спецсимволами
+$VAR['autoremove'] = false; // удалать текст в [remove] [/remove]
+$VAR['compress_text'] = false; // сжимать текст
+$VAR['remove_protocol'] = false; // удалить http-протокол
+$VAR['nocss'] = false; // не загружать css-файлы
+$VAR['nojs'] = false; // не загружать js-файлы
+$VAR['nofavicon'] = false; // не подключать favicon.png
+$VAR['nocache'] = false; // не использовать кэширование
 $VAR['cache_time'] = 86400; // время жизни кэша страницы в секундах (24 часа)
-$VAR['html_attr'] = '';
-$VAR['body_attr'] = '';
+$VAR['html_attr'] = ''; // атрибуты для тэга HTML
+$VAR['body_attr'] = ''; // аттрибуты для тэга BODY
 $VAR['no_output_only_file'] = false;
-$VAR['autoload_css_page'] = true;
-$VAR['autoload_js_page'] = true;
-$VAR['generate_static_page'] = false;
-$VAR['generate_static_page_base_url'] = '';
-$VAR['generate_static_page_function'] = '';
+$VAR['autoload_css_page'] = true; // автозагрузка css-файлов текущей страницы
+$VAR['autoload_js_page'] = true; // автозагрузка js-файлов текущей страницы
+$VAR['generate_static_page'] = false; // генерация статичной страницы
+$VAR['generate_static_page_base_url'] = ''; // замена базового адреса статичной страницы
+$VAR['generate_static_page_function'] = ''; // функция-обработчик при статичной странице
 
-$VAR['head_file'] = true;
-$VAR['head_file1'] = false;
-$VAR['start_file'] = true;
-$VAR['start_file1'] = false;
-$VAR['end_file'] = true;
-$VAR['end_file1'] = false;
+$VAR['head_file'] = true; // файл в секции HEAD = head.php
+$VAR['head_file1'] = false; // произвольный файл в HEAD
+$VAR['start_file'] = true; // файл в начале BODY = header.php
+$VAR['start_file1'] = false; // произвольный файл в начале BODY
+$VAR['end_file'] = true; // файл в конце BODY = footer.php
+$VAR['end_file1'] = false; // произвольный файл в конце BODY
 
-$VAR['start_file_text'] = false;
-$VAR['end_file_text'] = false;
-$VAR['before_file'] = false;
-$VAR['after_file'] = false;
-$VAR['tmpl'] = false;
-$VAR['set_text'] = false;
+$VAR['start_file_text'] = false; // файл перед index.php
+$VAR['end_file_text'] = false; // файл после index.php
+$VAR['before_file'] = false; // файл перед html-кодом
+$VAR['after_file'] = false; // файл в конце BODY
+
+$VAR['tmpl'] = false; // использовать php-шаблонизатор
+$VAR['set_text'] = false; // использовать [set]-фрагменты 
 $VAR['stat_out'] = true; // вывод статистики
 
 $VAR['nd_css'] = 'assets/css'; // каталог css
@@ -74,7 +75,7 @@ $VAR['nd_js'] = 'assets/js'; // каталог js
 
 // служебное
 $MSO['_use_cache'] = false;
-$MSO['_page_file'] = 'index.php'; 
+$MSO['_page_file'] = 'index.php'; // файл страницы
 $MSO['_loaded_script'] = array(); // список загруженых js-скриптов 
 $MSO['_loaded_css'] = array(); // список загруженых css-файлов
 $MSO['_routing_page'] = '_routing'; // страница роутинга
@@ -712,10 +713,10 @@ function mso_output_text()
 		
 		ob_start();
 		
-		// файл перед page.php
+		// файл перед index.php
 		if ($VAR['start_file_text'] and $fd = mso_fe($VAR['start_file_text'])) require($fd);
 		
-		// файл page.php
+		// файл index.php
 		if ($VAR['tmpl']) 
 		{
 			// используется шаблонизатор
@@ -728,7 +729,7 @@ function mso_output_text()
 			require($fn);
 		}
 		
-		// файл после page.php
+		// файл после index.php
 		if ($VAR['end_file_text'] and $fd = mso_fe($VAR['end_file_text'])) require($fd);
 		
 		$out = ob_get_clean();
