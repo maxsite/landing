@@ -17,7 +17,7 @@
 
 $_TIME_START = microtime(true); // для статистики
 
-define("LPF_VERSION", "36.5 3/10/2018"); // версия LPF
+define("LPF_VERSION", "36.6 31/10/2018"); // версия LPF
 
 define("NR", "\n"); // перенос строки
 define("NT", "\n\t"); // перенос + табулятор

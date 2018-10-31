@@ -39,7 +39,11 @@ function _getFiles($rdi, $depth=0, $dir, $allow_ext = array('php', 'txt', 'css',
 		{
 			$cur = $rdi->current();
 			$cur = str_replace('\\', '/', $cur);
-			$cur = str_replace($dir, '', $cur);
+			$cur = str_replace(str_replace('\\', '/', BASE_DIR), '', $cur);
+			
+			// pr($cur);
+			// $cur = str_replace(BASE_DIR, '', $cur);
+			// $cur = str_replace($dir, '', $cur);
 			
 			if ($rdi->isDir()) 
 			{
@@ -158,7 +162,7 @@ function _RgetSubDirs($rdi, $dir, $depth=0, $all = array()) {
          if ($rdi->isDir()) 
 		 {
 			$cur = $rdi->current();
-			$cur = str_replace('\\', '/', $cur);
+			$cur = _ss($cur);
 			$cur = str_replace($dir, '', $cur);
 
 			// echo $cur . '<br>';
@@ -215,6 +219,13 @@ function _delete_files($path, $del_dir = FALSE, $level = 0)
 function _clear_cache()
 {
 	_delete_files(CACHE_DIR, FALSE, 0);
+}
+
+
+// замена win-слэшей на /
+function _ss($t)
+{
+	return str_replace('\\', '/', $t);
 }
 
 

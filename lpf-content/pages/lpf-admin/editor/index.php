@@ -9,17 +9,25 @@ if (!mso_check_auth('<p class="t-center mar20"><a href="?login" class="button">L
 
 <?php 
 
-$directory = BASE_DIR . 'lpf-content/';
-$directory = str_replace('\\', '/', $directory);
-
+$directory = _ss(LPF_CONTENT_DIR);
 $r = new RecursiveDirectoryIterator($directory);
 
 $files = _getFiles($r, 0, $directory);
+
+if(strpos(PAGES_DIR, LPF_CONTENT_DIR) === false)
+{
+	$directory = _ss(PAGES_DIR);
+	$r1 = new RecursiveDirectoryIterator($directory);
+	$files1 = _getFiles($r1, 0, $directory);
+	
+	$files = array_merge($files, $files1);
+}
+
+
 $content_file = '';
 $file_path = '';
 
 $select = '<option value="" selected>-</option>';
-
 foreach ($files as $file)
 {
 	if (strpos($file, '/' . CURRENT_PAGE_ROOT . '/') !== false) continue; // не выводим админку
@@ -27,9 +35,8 @@ foreach ($files as $file)
 	$class = 't-gray500';
 	
 	if (strpos($file, '.css') !== false) $class = 't-green';
-	if (strpos($file, '.less') !== false) $class = 't-green';
 	if (strpos($file, '.js') !== false) $class = 't-orange';
-	if (strpos($file, '/index.php') !== false) $class = 'bold';
+	if (strpos($file, '/index.php') !== false) $class = 't-black';
 		
 	if (strpos($file, 'optgroup') === false)
 	{
@@ -41,7 +48,7 @@ foreach ($files as $file)
 
 ?>
 
-<p class="mar30-t">Select file <select id="select_file" class="w-auto"><?= $select ?></select> <span id="success"></span></p>
+<p class="mar30-t">Select file <select id="select_file" class="w-auto"><?= $select ?></select> <button class="button b-hide-imp pad5-tb bg-blue400 hover-bg-red400" type="button" id="delete_file" style="vertical-align: top;" onClick="return(confirm('Delete this file?'))">Delete file</button> <span id="success"></span></p>
 
 <form method="post" id="edit_form" action="">
 	

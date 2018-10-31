@@ -6,6 +6,7 @@ if ($post = mso_check_post('check_page'))
 {
 	if (!_auth()) return 'STOP';
 	
+	/*
 	$check_page = _slug($post['check_page'], false); // слэш можно использовать для подкаталогов
 	
 	if (is_dir(PAGES_DIR . $check_page))
@@ -16,6 +17,10 @@ if ($post = mso_check_post('check_page'))
 	{
 		echo 'OK';
 	}
+	*/
+	
+	// возвращаем OK чтобы не переделывать логику js-скрипта
+	echo 'OK';
 	
 	return 'STOP';
 }
@@ -24,7 +29,8 @@ if ($post = mso_check_post('check_page'))
 if ($post = mso_check_post('form_create_page'))
 {
 	if (!_auth()) return;
-	
+		
+		
 	// pr($post['form_create_page']);
 	
 	// преобразуем входящий массив в обычный от формы
@@ -77,13 +83,15 @@ if ($post = mso_check_post('form_create_page'))
 	
 	if (is_dir(PAGES_DIR . $in['new_page']))
 	{
-		echo 'Page already exists (3)';
-		return 'STOP';
+		echo ' Page already exists (3) ';
+		// return 'STOP'; // можно дальше работать, возможно добавить новые файлы
 	}
-	
-	// создаем каталог
-	@mkdir(PAGES_DIR . $in['new_page'], 0777);
-	
+	else
+	{
+		// создаем каталог
+		@mkdir(PAGES_DIR . $in['new_page'], 0777);
+	}
+		
 	// и сразу проверяем - если запрещено создание, то выходим с ошибкой
 	if (!is_dir(PAGES_DIR . $in['new_page']))
 	{
@@ -98,17 +106,20 @@ if ($post = mso_check_post('form_create_page'))
 	{
 		foreach($in['add_dir'] as $dir)
 		{
-			@mkdir(PAGES_DIR . $in['new_page'] . '/' . $dir, 0777);
+			my_mkdir(PAGES_DIR . $in['new_page'] . '/' . $dir);
 			
 			if ($dir == 'js')
 			{
-				@mkdir($new_page_dir . $dir . '/autoload', 0777);
-				@mkdir($new_page_dir . $dir . '/lazy', 0777);
+				my_mkdir($new_page_dir . $dir . '/autoload');
+				my_mkdir($new_page_dir . $dir . '/lazy');
+
+				my_copy(CURRENT_PAGE_DIR . '/blanks/my.js.txt', $new_page_dir . 'js/autoload/my.js');
+				my_copy(CURRENT_PAGE_DIR . '/blanks/my.js.txt', $new_page_dir . 'js/lazy/my.js');
 			}
 			
 			if ($dir == 'css')
 			{
-				@copy(CURRENT_PAGE_DIR . '/blanks/style.css.txt', $new_page_dir . 'css/style.css');
+				my_copy(CURRENT_PAGE_DIR . '/blanks/style.css.txt', $new_page_dir . 'css/style.css');
 			}
 		}
 	}
@@ -119,15 +130,31 @@ if ($post = mso_check_post('form_create_page'))
 	{
 		foreach($in['add_file'] as $file)
 		{
-			@copy(CURRENT_PAGE_DIR . '/blanks/' . $file . '.txt', $new_page_dir . $file);
+			my_copy(CURRENT_PAGE_DIR . '/blanks/' . $file . '.txt', $new_page_dir . $file);
 		}
 	}
 	
 	// возвращаем адрес новой страницы
-	echo '<a class="t-green" href="' . BASE_URL . $in['new_page'] . '" target="_blank">OK: page «' . $in['new_page'] . '» created!</a>';
+	echo ' <a class="t-green" href="' . BASE_URL . $in['new_page'] . '" target="_blank">OK: page «' . $in['new_page'] . '»</a>';
 	
 	
 	return 'STOP';
+}
+
+/**
+* создание каталога, если его нет 
+**/
+function my_mkdir($d) 
+{
+	if (!is_dir($d)) @mkdir($d, 0777);
+}
+
+/**
+* создание файла, если его нет 
+**/
+function my_copy($f1, $f2) 
+{
+	if (!file_exists($f2)) @copy($f1, $f2);
 }
 
 # end of file

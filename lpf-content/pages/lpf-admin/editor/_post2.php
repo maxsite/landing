@@ -10,12 +10,28 @@ if ($post = mso_check_post('content', 'file_path'))
 	$file = str_replace('~', '-', $file);
 	$file = str_replace('\\', '-', $file);
 	$page_a = $file; //  pages/about/index.php — определим страницу по адресу
-	$file = BASE_DIR . 'lpf-content/' . $file;
+	$file = BASE_DIR . $file;
 	
 	if (file_exists($file))
 	{
 		$url = '';
 		
+		// pr(_ss($file));
+		// pr(_ss(PAGES_DIR));
+		// pr(_ss(BASE_DIR));
+		
+		if(strpos(_ss($file), _ss(PAGES_DIR)) !== false) // это какая-то pages
+		{
+			
+			$page_a = pathinfo($file, PATHINFO_DIRNAME); // каталог
+			$page_a = str_replace(_ss(PAGES_DIR), '', _ss($page_a)); // убрать pages_dir
+			$page_a = explode('/', $page_a); // первый сегмент
+			$page_a = $page_a[0]; // первый элемент
+		
+			$url = ' <a class="mar20-l" target="_blank" href="' . BASE_URL . $page_a . '">View page</a>';
+		}
+		
+		/*
 		// страница определяется как первый сегмент после pages/
 		if (strpos($page_a, 'pages/') === 0)
 		{
@@ -26,6 +42,8 @@ if ($post = mso_check_post('content', 'file_path'))
 			$page_a = '';
 		
 		if ($page_a) $url = ' <a target="_blank" href="' . BASE_URL . $page_a . '">View page</a>';
+		*/
+		
 		
 		file_put_contents($file, $post['content']);
 		
@@ -48,11 +66,31 @@ elseif ($post = mso_check_post('load', 'file'))
 	$file = base64_decode($post['file']);
 	$file = str_replace('~', '-', $file);
 	$file = str_replace('\\', '-', $file);
-	$file = BASE_DIR . 'lpf-content/' . $file;
+	// pr($file);
+	$file = BASE_DIR . $file;
 
+	
 	if (file_exists($file)) echo file_get_contents($file);
 	
 	return 'STOP';
 }
+elseif ($post = mso_check_post('delete_file'))
+{
+	if (!_auth()) return 'STOP';
+
+	$file = base64_decode($post['delete_file']);
+	$file = str_replace('~', '-', $file);
+	$file = str_replace('\\', '-', $file);
+	$file = BASE_DIR . $file;
+
+	// pr($file);
+	
+	if (file_exists($file)) @unlink($file);
+	
+	return 'STOP';
+}
+
+
+
 
 # end of file

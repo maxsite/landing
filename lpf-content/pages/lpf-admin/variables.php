@@ -16,7 +16,7 @@ $VAR['end_file_text'] = false;
 $VAR['after_file'] = false;
 $VAR['html_attr'] = 'lang="en"';
 
-$VAR['nd_css'] = 'lpf-content/pages/' . CURRENT_PAGE . '/assets/css';
-$VAR['nd_js'] = 'lpf-content/pages/' . CURRENT_PAGE . '/assets/js';
+$VAR['nd_css'] = str_replace(BASE_URL, '', PAGES_URL) . CURRENT_PAGE . '/assets/css';
+$VAR['nd_js'] = str_replace(BASE_URL, '', PAGES_URL) . CURRENT_PAGE . '/assets/js';
 
 # end of file

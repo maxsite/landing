@@ -48,7 +48,7 @@ foreach($all_dirs as $page)
 
 ?>
 </ul>
-<button class="<?= $show_delete_button ?>" type="submit" name="delete_pages" onClick="return(confirm('Delete pages?'))">Delete select pages</button></form>
+<button class="<?= $show_delete_button ?> button" type="submit" name="delete_pages" onClick="return(confirm('Delete pages?'))">Delete select pages</button></form>
 </div></div>
 
 <script>
