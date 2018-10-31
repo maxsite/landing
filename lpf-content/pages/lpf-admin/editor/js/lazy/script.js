@@ -114,22 +114,12 @@ $('#delete_file').click(function(){
 	
 	if (f)
 	{
-		$.post(PHPVAR.current_url, {delete_file:f},  function(response) 
+		if (confirm('Delete this file?'))
 		{
-			// $('#file_path').val(f);
-			// $('#content').val(response);
-			// $('#delete_file').hide().removeClass('b-hide-imp').fadeIn(500);
-			
-			// $('#success').html('<span class="mar10-l t-green t130">✔</span> File delete');
-			// $('#success').fadeOut(2000);
-			
-			// $('#success').show();
-			// $("#success").html(response);
-			// $('#content').val('');
-			
-			// $('#b-save').fadeOut(100);
-			
-			location.reload();
-		});
+			$.post(PHPVAR.current_url, {delete_file:f},  function(response) 
+			{
+				location.reload();
+			});
+		}
 	}
 });

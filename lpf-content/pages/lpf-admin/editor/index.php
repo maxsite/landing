@@ -35,8 +35,9 @@ foreach ($files as $file)
 	$class = 't-gray500';
 	
 	if (strpos($file, '.css') !== false) $class = 't-green';
+	if (strpos($file, '.less') !== false) $class = 't-green';
 	if (strpos($file, '.js') !== false) $class = 't-orange';
-	if (strpos($file, '/index.php') !== false) $class = 't-black';
+	if (strpos($file, '/index.php') !== false) $class = 'bold';
 		
 	if (strpos($file, 'optgroup') === false)
 	{
@@ -48,7 +49,7 @@ foreach ($files as $file)
 
 ?>
 
-<p class="mar30-t">Select file <select id="select_file" class="w-auto"><?= $select ?></select> <button class="button b-hide-imp pad5-tb bg-blue400 hover-bg-red400" type="button" id="delete_file" style="vertical-align: top;" onClick="return(confirm('Delete this file?'))">Delete file</button> <span id="success"></span></p>
+<p class="mar30-t">Select file <select id="select_file" class="w-auto"><?= $select ?></select> <button class="button b-hide-imp pad5-tb bg-blue400 hover-bg-red400" type="button" id="delete_file" style="vertical-align: top;">Delete file</button> <span id="success"></span></p>
 
 <form method="post" id="edit_form" action="">
 	

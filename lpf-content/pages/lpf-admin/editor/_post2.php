@@ -15,11 +15,7 @@ if ($post = mso_check_post('content', 'file_path'))
 	if (file_exists($file))
 	{
 		$url = '';
-		
-		// pr(_ss($file));
-		// pr(_ss(PAGES_DIR));
-		// pr(_ss(BASE_DIR));
-		
+
 		if(strpos(_ss($file), _ss(PAGES_DIR)) !== false) // это какая-то pages
 		{
 			
@@ -30,21 +26,7 @@ if ($post = mso_check_post('content', 'file_path'))
 		
 			$url = ' <a class="mar20-l" target="_blank" href="' . BASE_URL . $page_a . '">View page</a>';
 		}
-		
-		/*
-		// страница определяется как первый сегмент после pages/
-		if (strpos($page_a, 'pages/') === 0)
-		{
-			$page_a = str_replace('pages/', '', $page_a);
-			$page_a = @strstr($page_a, '/', true);
-		}
-		else 
-			$page_a = '';
-		
-		if ($page_a) $url = ' <a target="_blank" href="' . BASE_URL . $page_a . '">View page</a>';
-		*/
-		
-		
+				
 		file_put_contents($file, $post['content']);
 		
 		_clear_cache();
@@ -66,7 +48,6 @@ elseif ($post = mso_check_post('load', 'file'))
 	$file = base64_decode($post['file']);
 	$file = str_replace('~', '-', $file);
 	$file = str_replace('\\', '-', $file);
-	// pr($file);
 	$file = BASE_DIR . $file;
 
 	
@@ -83,14 +64,10 @@ elseif ($post = mso_check_post('delete_file'))
 	$file = str_replace('\\', '-', $file);
 	$file = BASE_DIR . $file;
 
-	// pr($file);
-	
 	if (file_exists($file)) @unlink($file);
 	
 	return 'STOP';
 }
-
-
 
 
 # end of file
