@@ -1,4 +1,6 @@
-(c) Landing Page Framework (LPF) — http://lpf.maxsite.com.ua/
+Проект закрыт. Вместо него испрользуйте https://maxsite.org/albireo
+
+(c) Landing Page Framework (LPF)
 (c) MAX — http://maxsite.org/
 
 
